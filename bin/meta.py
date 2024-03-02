@@ -3,9 +3,24 @@
 import os
 import argparse
 
+"""
+    Meta.py
+
+    Analyze a MySql database schema and metadata stored as database comments.
+
+    The scripts uses the following environment variables:
+    - META_DB_HOST: the host name of the MySql server
+    - META_DB_PORT: the port number of the MySql server
+    - META_DB_USER: the user name to connect to the MySql server
+    - META_DB_PASSWORD: the password to connect to the MySql server
+    - META_DB_NAME: the name of the database to analyze
+
+
+"""
+
 parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('integers', metavar='N', type=int, nargs='+',
-                    help='an integer for the accumulator')
+# parser.add_argument('integers', metavar='N', type=int, nargs='+',
+#                    help='an integer for the accumulator')
 parser.add_argument('--sum', dest='accumulate', action='store_const',
                     const=sum, default=max,
                     help='sum the integers (default: find the max)')
@@ -14,8 +29,7 @@ parser.add_argument('--level', type=int, choices=[0, 1, 2, 3, 4, 5],
                     help='criticity level, from 0 to 5')
 
 args = parser.parse_args()
-print(args.accumulate(args.integers))
-print("level = ", args.level)
+
 
 def print_env(env):
     try:
@@ -24,10 +38,20 @@ def print_env(env):
         print ("Unknown environment variable: ", env)
         # print (e)   
     
-print ("Command line arguments\n")
-print_env('PATH')
-print_env('HOME')
+# Check required environment variables
 
+if 'META_DB' not in os.environ:
+    print ("Missing environment variable: META_DB")
+    exit(1)
 
+if 'META_DB_USER' not in os.environ:
+    print ("Missing environment variable: META_DB_USER")
+    exit(1)
 
+if 'META_DB_PASSWORD' not in os.environ:
+    print ("Missing environment variable: META_DB_PASSWORD")
+    exit(1)
+
+print ("Connecting to database: ", os.environ['META_DB'])
+print ("Using user: ", os.environ['META_DB_USER'])
 print ("bye")
