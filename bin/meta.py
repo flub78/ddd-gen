@@ -42,8 +42,15 @@ def print_env(env):
     
 # Check required environment variables
 
-check_env_variable()
+db = db_connect()
 
-get_schema()
+database = os.environ['META_DB']
+tables = get_tables(db, database)
 
-print ("bye")
+print(database)
+for table in tables:
+    print("\t", table)
+    fileds = get_fields(db, database, table)
+
+close_db(db)
+print ("bye ...")
