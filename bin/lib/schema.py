@@ -6,6 +6,9 @@ import mysql.connector
 
 """
 Fetch information about the database schema and metadata
+
+For performance resons, the script fetches all the data and keep them in memory.
+
 """
 
 
@@ -51,11 +54,21 @@ def get_fields(db, database, table):
 
     cursor = db.cursor()
 
-    query = " SHOW COLUMNS FROM " + table + " FROM " + database
+    query = " SHOW FULL COLUMNS FROM " + table + " FROM " + database
     cursor.execute(query)
 
-    for line in cursor:
+    for field in cursor:
         # fields.append(id, type, collation, null, key, extra, privileges, comment)
-        print("\t\t", line)
+        print("\t\t", field)
+        elt = {}
+        elt['id'] = field[0]
+        elt['type'] = field[1]
+        elt['collation'] = field[2]
+        elt['null'] = field[3]
+        elt['key'] = field[4]
+        elt['extra'] = field[5]
+        elt['privileges'] = field[6]
+        elt['comment'] = field[7]
+        fields.append(elt)
 
     return fields

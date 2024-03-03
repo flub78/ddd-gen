@@ -17,7 +17,32 @@ from lib.schema import *
     - META_DB_PASSWORD: the password to connect to the MySql server
     - META_DB_NAME: the name of the database to analyze
 
-
+	meta database						# returns the database name
+	
+	meta -d boards tables				# returns all the table names
+	
+	meta -d boards -t users fields		# returns the field names for a table
+	
+	meta -d boards -t users -f email	# returns the field attributes
+	
+		id
+		type
+		collation
+		null
+		key
+		extra
+		privileges
+		comments
+		
+		base_type	returns the type with no size
+		size		returns the size
+		meta_attribute (database, table, field, attribute) the value or null
+		
+		others functions
+		nullable
+		is_foreign_key
+		foreign_table
+		foreign_field
 """
 
 parser = argparse.ArgumentParser(description='Process some integers.')
@@ -50,7 +75,8 @@ tables = get_tables(db, database)
 print(database)
 for table in tables:
     print("\t", table)
-    fileds = get_fields(db, database, table)
+    fields = get_fields(db, database, table)
+    print (fields)
 
 close_db(db)
 print ("bye ...")
