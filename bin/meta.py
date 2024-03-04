@@ -65,18 +65,43 @@ def print_env(env):
         print ("Unknown environment variable: ", env)
         # print (e)   
     
-# Check required environment variables
 
 db = db_connect()
 
 database = os.environ['META_DB']
-tables = get_tables(db, database)
+fetch_data(database)
+
+tables = table_list()
 
 print(database)
+print("tables", tables)
 for table in tables:
     print("\t", table)
-    fields = get_fields(db, database, table)
-    print (fields)
+    fields = field_list(table)
+    for field in fields:
+        print ("\t\t", field)
+
+        print ("\t\t\t field:",field_name(table, field))
+        print ("\t\t\t type:",field_type(table, field))
+        # print ("\t\t\t size:",field_size(table, field))
+        # print ("\t\t\t base_type:",field_base_type(table, field))
+        # print ("\t\t\t unsigned:",field_unsigned(table, field))
+
+        # print ("\t\t\t collation:",field_collation(table, field))
+        # print ("\t\t\t null:",field_null(table, field))
+        # print ("\t\t\t nullable:", field_nullable(table, field))
+
+        # print ("\t\t\t key:",field_key(table, field))
+        # print ("\t\t\t default:",field_default(table, field))
+        # print ("\t\t\t extra:",field_extra(table, field))
+        # print ("\t\t\t privileges:",field_privileges(table, field))
+        print ("\t\t\t comment:",field_comment(table, field))
+        print ('')
+        
+    # print ("\t\t\t subtype :",field_meta('boards', 'favorite', 'subtype'))
+    # print ("\t\t\t unknown :",field_meta('boards', 'favorite', 'unknown'))
+
+    # print ("\t\t\t subtype :",field_subtype('boards', 'favorite'))
 
 close_db(db)
 print ("bye ...")
