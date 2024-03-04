@@ -46,17 +46,18 @@ from lib.schema import *
 """
 
 parser = argparse.ArgumentParser(description='Process some integers.')
-# parser.add_argument('integers', metavar='N', type=int, nargs='+',
-#                    help='an integer for the accumulator')
-parser.add_argument('--sum', dest='accumulate', action='store_const',
-                    const=sum, default=max,
-                    help='sum the integers (default: find the max)')
-parser.add_argument('--level', type=int, choices=[0, 1, 2, 3, 4, 5],
-                    action="store", dest="level",
-                    help='criticity level, from 0 to 5')
+
+parser.add_argument('-d', '--database', type=str, action="store", dest="database",
+                    help='database name')
+parser.add_argument('-t', '--table', type=str, action="store", dest="table",
+                    help='table name')
+parser.add_argument('-f', '--field', type=str, action="store", dest="field",
+                    help='field name')
+parser.add_argument('action', type=str, action="store", nargs='?',
+                    help='action to perform')
 
 args = parser.parse_args()
-
+print('args', args)
 
 def print_env(env):
     try:
@@ -65,8 +66,6 @@ def print_env(env):
         print ("Unknown environment variable: ", env)
         # print (e)   
     
-
-db = db_connect()
 
 database = os.environ['META_DB']
 fetch_data(database)
@@ -103,5 +102,4 @@ for table in tables:
 
     # print ("\t\t\t subtype :",field_subtype('boards', 'favorite'))
 
-close_db(db)
 print ("bye ...")
