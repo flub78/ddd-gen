@@ -153,7 +153,7 @@ def field_meta(table, field, key):
 
 def field_subtype(table, field):
     try:
-        return field_meta(table, field, 'subtype')
+        return field_meta(table, field, 'subtype').strip()
     except:
         return None
 

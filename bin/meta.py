@@ -67,9 +67,9 @@ def print_field(table, field, full=False):
         print ('')
     else:
         subtype = field_subtype(table, field) 
-        if subtype == "None":
+        if subtype == None:
             subtype = ""
-        print ("\t\t", field, ' ', field_type(table, field), ' ', subtype)
+        print ("\t\t", field, ' ', field_type(table, field),  subtype)
 
 
 parser = argparse.ArgumentParser(
@@ -124,21 +124,34 @@ if (not password):
 
 fetch_data(database, user, password)
 
+if (args.table):
+    if (args.field):
+        # table and field are specified
+        print("\t", args.table)
+        print_field(args.table, args.field, args.verbose)
+        exit(0)
+
+    # only table is specified
+    table = args.table
+    fields = field_list(table)
+    print("\t", args.table)
+    for field in fields:
+        print_field(table, field, args.verbose)
+    exit(0)
+
+# only database is specified
 tables = table_list()
 
 print(database)
 print("tables", tables)
-for table in tables:
-    print("\t", table)
-    fields = field_list(table)
-    for field in fields:
-        print_field(table, field, args.verbose)
+if (args.action == "list"):
+    exit(0)
+else:    
+    for table in tables:
+        print("\t", table)
 
- 
-        
-    # print ("\t\t\t subtype :",field_meta('boards', 'favorite', 'subtype'))
-    # print ("\t\t\t unknown :",field_meta('boards', 'favorite', 'unknown'))
-
-    # print ("\t\t\t subtype :",field_subtype('boards', 'favorite'))
+        fields = field_list(table)
+        for field in fields:
+            print_field(table, field, args.verbose)
 
 print ("bye ...")
