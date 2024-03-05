@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding:utf8 -*
-import os
 import argparse
 from lib.schema import *
 
@@ -95,34 +94,7 @@ args = parser.parse_args()
 if (args.verbose):
     print('args', args)
 
-    
-# Analyze CLI parameters and env variables
-database = os.environ['META_DB'] if 'META_DB' in os.environ else ""
-if args.database:
-    database = args.database
-
-user = os.environ['META_DB_USER'] if 'META_DB_USER' in os.environ else ""
-if args.user:
-    user = args.user
-
-password = os.environ['META_DB_PASSWORD'] if 'META_DB_PASSWORD' in os.environ else ""
-if args.password:
-    password = args.password
-
-
-if (not database):
-    print ("database not defined: META_DB or -d argument²")
-    exit(1)
-
-if (not user):
-    print ("user not defined: META_DB_USER or -u argument")
-    exit(1)
-
-if (not password):
-    print ("password not defined: META_DB_PASSWORD or -p argument")
-    exit(1)
-
-fetch_data(database, user, password)
+database, user, password = check_args_and_fetch(args)
 
 if (args.table):
     if (args.field):

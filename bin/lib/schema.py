@@ -16,7 +16,6 @@ tables = []
 field_l = {}
 attributes = {}
 
-
 def fetch_data(database, user, password):
     host = os.environ['META_DB_HOST'] if 'META_DB_HOST' in os.environ else 'localhost'
     port = os.environ['META_DB_PORT'] if 'META_DB_PORT' in os.environ else 3306
@@ -38,6 +37,33 @@ def get_tables(db, database):
         tables.append(table_name)
     return tables
 
+def check_args_and_fetch(args):
+    # Analyze CLI parameters and env variables
+    database = os.environ['META_DB'] if 'META_DB' in os.environ else ""
+    if args.database:
+           database = args.database
+
+    user = os.environ['META_DB_USER'] if 'META_DB_USER' in os.environ else ""
+    if args.user:
+        user = args.user
+
+    password = os.environ['META_DB_PASSWORD'] if 'META_DB_PASSWORD' in os.environ else ""
+    if args.password:
+        password = args.password
+
+    if (not database):
+        print ("database not defined: META_DB or -d argument²")
+        exit(1)
+
+    if (not user):
+        print ("user not defined: META_DB_USER or -u argument")
+        exit(1)
+
+    if (not password):
+        print ("password not defined: META_DB_PASSWORD or -p argument")
+        exit(1)
+    fetch_data(database, user, password)
+    return database, user, password
 
 def get_fields(db, database, table):
     cursor = db.cursor()
