@@ -16,39 +16,18 @@ tables = []
 field_l = {}
 attributes = {}
 
-def fetch_data(database):
-    db = db_connect()
+
+def fetch_data(database, user, password):
+    host = os.environ['META_DB_HOST'] if 'META_DB_HOST' in os.environ else 'localhost'
+    port = os.environ['META_DB_PORT'] if 'META_DB_PORT' in os.environ else 3306
+
+    db = mysql.connector.connect(host=host, user=user, db=database, passwd=password, port=int(port) )
     tables = get_tables(db, database)
     data = {}
     for table in tables:
         data[table] = get_fields(db, database, table)
-    close_db(db)
-    return data
-
-def db_connect():
-    # Check required environment variables
-
-    if 'META_DB' not in os.environ:
-        print ("Missing environment variable: META_DB")
-        exit(1)
-
-    if 'META_DB_USER' not in os.environ:
-        print ("Missing environment variable: META_DB_USER")
-        exit(1)
-
-    if 'META_DB_PASSWORD' not in os.environ:
-        print ("Missing environment variable: META_DB_PASSWORD")
-        exit(1)
-    user = os.environ['META_DB_USER']
-    password = os.environ['META_DB_PASSWORD']
-    database = os.environ['META_DB']
-    host = os.environ['META_DB_HOST'] if 'META_DB_HOST' in os.environ else 'localhost'
-    port = os.environ['META_DB_PORT'] if 'META_DB_PORT' in os.environ else 3306
-    db = mysql.connector.connect(host=host, user=user, db=database, passwd=password, port=int(port) )
-    return db
-
-def close_db(db):
     db.close()
+    return data    
 
 def get_tables(db, database):
     global tables
@@ -173,7 +152,10 @@ def field_meta(table, field, key):
     return meta[key] if key in meta else None
 
 def field_subtype(table, field):
-    return field_meta(table, field, 'subtype')
+    try:
+        return field_meta(table, field, 'subtype')
+    except:
+        return None
 
 """
     TODO: indirect attributes access

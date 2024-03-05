@@ -2,7 +2,6 @@
 # -*- coding:utf8 -*
 import os
 import argparse
-import mysql.connector
 from lib.schema import *
 
 """
@@ -45,8 +44,40 @@ from lib.schema import *
 		foreign_field
 """
 
-parser = argparse.ArgumentParser(description='Process some integers.')
+def print_field(table, field, full=False):
+    if (full):
+        print ("\t\t", field)
 
+        print ("\t\t\t field:",field_name(table, field))
+        print ("\t\t\t type:",field_type(table, field))
+        print ("\t\t\t subtype :",field_subtype(table, field))
+        print ("\t\t\t size:",field_size(table, field))
+        print ("\t\t\t base_type:",field_base_type(table, field))
+        print ("\t\t\t unsigned:",field_unsigned(table, field))
+
+        print ("\t\t\t collation:",field_collation(table, field))
+        print ("\t\t\t null:",field_null(table, field))
+        print ("\t\t\t nullable:", field_nullable(table, field))
+
+        print ("\t\t\t key:",field_key(table, field))
+        print ("\t\t\t default:",field_default(table, field))
+        print ("\t\t\t extra:",field_extra(table, field))
+        print ("\t\t\t privileges:",field_privileges(table, field))
+        print ("\t\t\t comment:",field_comment(table, field))
+        print ('')
+    else:
+        subtype = field_subtype(table, field) 
+        if subtype == "None":
+            subtype = ""
+        print ("\t\t", field, ' ', field_type(table, field), ' ', subtype)
+
+
+parser = argparse.ArgumentParser(
+    description='Extract meta data from a MySql database.',
+    epilog='Database, user and password can also be define into the META_DB, META_DB_USER, META_DB_PASSWORD environment variables.')
+
+parser.add_argument('-v', '--verbose', action="store_true", dest="verbose",
+                    help='verbose mode')
 parser.add_argument('-d', '--database', type=str, action="store", dest="database",
                     help='database name')
 parser.add_argument('-t', '--table', type=str, action="store", dest="table",
@@ -55,20 +86,43 @@ parser.add_argument('-f', '--field', type=str, action="store", dest="field",
                     help='field name')
 parser.add_argument('action', type=str, action="store", nargs='?',
                     help='action to perform')
-
+parser.add_argument('-u', '--user', type=str, action="store", dest="user",
+                    help='database user')
+parser.add_argument('-p', '--password', type=str, action="store", dest="password",
+                    help='database user')
 args = parser.parse_args()
-print('args', args)
 
-def print_env(env):
-    try:
-        print(env, ": ", os.environ[env])
-    except Exception as e:
-        print ("Unknown environment variable: ", env)
-        # print (e)   
+if (args.verbose):
+    print('args', args)
+
     
+# Analyze CLI parameters and env variables
+database = os.environ['META_DB'] if 'META_DB' in os.environ else ""
+if args.database:
+    database = args.database
 
-database = os.environ['META_DB']
-fetch_data(database)
+user = os.environ['META_DB_USER'] if 'META_DB_USER' in os.environ else ""
+if args.user:
+    user = args.user
+
+password = os.environ['META_DB_PASSWORD'] if 'META_DB_PASSWORD' in os.environ else ""
+if args.password:
+    password = args.password
+
+
+if (not database):
+    print ("database not defined: META_DB or -d argument²")
+    exit(1)
+
+if (not user):
+    print ("user not defined: META_DB_USER or -u argument")
+    exit(1)
+
+if (not password):
+    print ("password not defined: META_DB_PASSWORD or -p argument")
+    exit(1)
+
+fetch_data(database, user, password)
 
 tables = table_list()
 
@@ -78,24 +132,9 @@ for table in tables:
     print("\t", table)
     fields = field_list(table)
     for field in fields:
-        print ("\t\t", field)
+        print_field(table, field, args.verbose)
 
-        print ("\t\t\t field:",field_name(table, field))
-        print ("\t\t\t type:",field_type(table, field))
-        # print ("\t\t\t size:",field_size(table, field))
-        # print ("\t\t\t base_type:",field_base_type(table, field))
-        # print ("\t\t\t unsigned:",field_unsigned(table, field))
-
-        # print ("\t\t\t collation:",field_collation(table, field))
-        # print ("\t\t\t null:",field_null(table, field))
-        # print ("\t\t\t nullable:", field_nullable(table, field))
-
-        # print ("\t\t\t key:",field_key(table, field))
-        # print ("\t\t\t default:",field_default(table, field))
-        # print ("\t\t\t extra:",field_extra(table, field))
-        # print ("\t\t\t privileges:",field_privileges(table, field))
-        print ("\t\t\t comment:",field_comment(table, field))
-        print ('')
+ 
         
     # print ("\t\t\t subtype :",field_meta('boards', 'favorite', 'subtype'))
     # print ("\t\t\t unknown :",field_meta('boards', 'favorite', 'unknown'))
