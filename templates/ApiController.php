@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Board;
+use App\Models\{{class}};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * Class BoardController
+ * Class {{class}}Controller
  * @package App\Http\Controllers\api
  */
-class BoardController extends Controller
+class {{class}}Controller extends Controller
 {
     //
 
@@ -21,13 +21,13 @@ class BoardController extends Controller
      */
     public function index()
     {
-        Log::Debug('BoardController@index');
+        Log::Debug('{{class}}Controller@index');
 
-        $boards = Board::all(); // SELECT * FROM boards
+        $elements = {{class}}::all(); // SELECT * FROM {{element}}s
 
         $data = [
             'status' => 200,
-            'boards' => $boards,
+            '{{element}}s' => $elements,
         ];
 
         return response()->json($data, 200);
@@ -38,15 +38,15 @@ class BoardController extends Controller
      */
     public function show($id)
     {
-        Log::Debug("BoardController@show $id");
+        Log::Debug("{{class}}Controller@show $id");
 
-        $board = Board::find($id); // SELECT * FROM boards WHERE id = $id
+        $element = {{class}}::find($id); // SELECT * FROM {{element}}s WHERE id = $id
 
-        if (!$board) {
+        if (!$element) {
             // 404 Not Found
             $data = [
                 'status' => 404,
-                'message' => 'Board not found',
+                'message' => '{{class}} not found',
             ];
 
             return response()->json($data, 404);
@@ -55,7 +55,7 @@ class BoardController extends Controller
         // 200 OK
         $data = [
             'status' => 200,
-            'board' => $board,
+            '{{element}}' => $element,
         ];
 
         return response()->json($data, 200);
@@ -66,7 +66,7 @@ class BoardController extends Controller
      */
     public function store(Request $request)
     {
-        Log::Debug('BoardController@store');
+        Log::Debug('{{class}}Controller@store');
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -85,28 +85,28 @@ class BoardController extends Controller
                 'errors' => $validator->errors(),
                 'message' => 'Validation failed',
             ];
-            Log::Debug('BoardController@store validation failed', $data);
+            Log::Debug('{{class}}Controller@store validation failed', $data);
 
             return response()->json($data, 422);
         }
 
-        $board = new Board;
-        $board->name = $request->name;
-        $board->description = $request->description;
-        $board->email = $request->email;
-        $board->favorite = $request->favorite;
-        $board->read_at = $request->read_at;
-        $board->href = $request->href;
-        $board->image = $request->image;
-        $board->theme = $request->theme;
+        $element = new {{class}};
+        $element->name = $request->name;
+        $element->description = $request->description;
+        $element->email = $request->email;
+        $element->favorite = $request->favorite;
+        $element->read_at = $request->read_at;
+        $element->href = $request->href;
+        $element->image = $request->image;
+        $element->theme = $request->theme;
 
-        $board->save();
+        $element->save();
 
         $data = [
             'status' => 200,
-            'board' => $board,
+            '{{element}}' => $element,
         ];
-        Log::Debug('BoardController@store saved in database', $data);
+        Log::Debug('{{class}}Controller@store saved in database', $data);
         return response()->json($data, 200);
     }
 
@@ -115,7 +115,7 @@ class BoardController extends Controller
      */
     public function update(Request $request, int $id)
     {
-        Log::Debug("BoardController@update $id");
+        Log::Debug("{{class}}Controller@update $id");
 
         $validator = Validator::make($request->all(), [
             'name' => 'string|max:255',
@@ -134,35 +134,35 @@ class BoardController extends Controller
                 'errors' => $validator->errors(),
                 'message' => 'Validation failed',
             ];
-            Log::Debug('BoardController@store validation failed', $data);
+            Log::Debug('{{class}}Controller@store validation failed', $data);
 
             return response()->json($data, 422);
         }
 
-        $board = Board::find($id);
+        $element = {{class}}::find($id);
 
-        if (!$board) {
+        if (!$element) {
             $data = [
                 'status' => 404,
-                'message' => 'Board not found',
+                'message' => '{{class}} not found',
             ];
 
             return response()->json($data, 404);
         }
 
-        $board->name = $request->name;
-        $board->description = $request->description;
-        $board->email = $request->email;
-        $board->favorite = $request->favorite;
-        $board->read_at = $request->read_at;
-        $board->href = $request->href;
-        $board->image = $request->image;
-        $board->theme = $request->theme;
-        $board->save();
+        $element->name = $request->name;
+        $element->description = $request->description;
+        $element->email = $request->email;
+        $element->favorite = $request->favorite;
+        $element->read_at = $request->read_at;
+        $element->href = $request->href;
+        $element->image = $request->image;
+        $element->theme = $request->theme;
+        $element->save();
 
         $data = [
             'status' => 200,
-            'board' => $board,
+            '{{element}}' => $element,
         ];
 
         return response()->json($data, 200);
@@ -173,24 +173,24 @@ class BoardController extends Controller
      */
     public function destroy($id)
     {
-        Log::Debug("BoardController@delete $id");
+        Log::Debug("{{class}}Controller@delete $id");
 
-        $board = Board::find($id);
+        $element = {{class}}::find($id);
 
-        if (!$board) {
+        if (!$element) {
             $data = [
                 'status' => 404,
-                'message' => 'Board not found',
+                'message' => '{{class}} not found',
             ];
 
             return response()->json($data, 404);
         }
 
-        $board->delete();
+        $element->delete();
 
         $data = [
             'status' => 200,
-            'message' => "Board $id deleted",
+            'message' => "{{class}} $id deleted",
         ];
 
         return response()->json($data, 200);

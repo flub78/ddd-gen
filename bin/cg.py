@@ -50,8 +50,8 @@ match snippet:
         print(cg_class(table))
     case "element":
         print(cg_element(table))
-    case "table":
-        print(cg_table(table))
+    case "guarded":
+        print(field_guarded(table))
     case "csv_fields":
         print(cg_csv_fields(table))
     case _:
