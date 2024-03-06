@@ -33,19 +33,24 @@ parser.add_argument('-v', '--verbose', action="store_true", dest="verbose",
                     help='verbose mode')
 parser.add_argument('-d', '--database', type=str, action="store", dest="database",
                     help='database name')
-parser.add_argument('-t', '--template', type=str, action="store", dest="template",
+parser.add_argument('-t', '--table', type=str, action="store", dest="table",
+                    required=True,
+                    help='table name')
+
+parser.add_argument('-tp', '--template', type=str, action="store", dest="template",
                     required=True,
                     help='the name of the mustache template')
+
 parser.add_argument('-o', '--output', type=str, action="store", dest="output",
                     help='name of the file to generate')
+parser.add_argument('-c', '--compare', type=str, action="store", dest="output",
+                    help='compare the output with a reference file (e.g. a previous version)')
 parser.add_argument('-g', '--generator', type=str, action="store", dest="generator",
                     help='name of the code generator to use')
 parser.add_argument('-u', '--user', type=str, action="store", dest="user",
                     help='database user')
 parser.add_argument('-p', '--password', type=str, action="store", dest="password",
                     help='database user')
-parser.add_argument('action', type=str, action="store",  
-                    help='action to perform: generate | compare | install')
 
 args = parser.parse_args()
 
@@ -53,27 +58,18 @@ if (args.verbose):
     print('args', args)
 
 database, user, password = check_args_and_fetch(args)
-
-def first(text, render):
-    # return only first occurance of items
-    print("first", text)
-    result = render(text)
-    return [ x.strip() for x in result.split(" || ") if x.strip() ][0]
+table = args.table
 
 def cg(text, render):
-    print("cg:", text)
+    # print("cg:", text)
     args = text.split()
     snippet = args[0]
 
     match snippet:
-        case "class":
-            code = cg_class(args[1])
-        case "element":
-            code = cg_element(args[1])
-        case "table":
-            result = cg_table(args[1])
         case "csv_fields":
-            code = cg_csv_fields(args[1])
+            code = cg_csv_fields(table)
+        case "guarded":
+            code = guarded(table)
         case _:
             code = "unknown snippet " + snippet
 
@@ -82,13 +78,20 @@ def cg(text, render):
 
 template = args.template
 dict = {
-    'mustache': 'World',
-    'first': first,
+    'class': cg_class(table),
+    'element': cg_element(table),
+    'table': table,
     'cg': cg
 }
 
 with open(template, 'r') as f:
     res = chevron.render(f, dict)
-    print(res)
 
-print ("bye ...")
+    if (args.output):
+        with open(args.output, 'w') as f:
+            f.write(res)
+        if (args.verbose):
+            print(f"file {args.output} generated")
+
+    else:
+        print(res)

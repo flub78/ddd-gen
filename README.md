@@ -30,5 +30,6 @@ the output can be cut and pasted to be manually inserted into source files.
 
 ## The template mechanism
 
-cg --template laravel.mst --user john --password xxxx --database my-db --output
+tpl -tp templates\Model.php -t boards
 
+tpl -tp template\ApiController.php -t boards

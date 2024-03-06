@@ -5,6 +5,7 @@ import os
 import mysql.connector
 import re
 import json
+from lib.schema import *
 
 """
 Fetch information about the database schema and metadata
@@ -16,6 +17,12 @@ tables = []
 field_l = {}
 attributes = {}
 
+# Utility functions
+def toBoolean(str):
+    if str == None: return False
+    return str.lower() in ['true', 'yes', '1']
+
+# Database functions
 def fetch_data(database, user, password):
     host = os.environ['META_DB_HOST'] if 'META_DB_HOST' in os.environ else 'localhost'
     port = os.environ['META_DB_PORT'] if 'META_DB_PORT' in os.environ else 3306
@@ -171,9 +178,12 @@ def field_nullable(table, field):
     null = attributes[table][field]['null']
     return null == 'YES'
 
+# Indirect metadata functions
 def field_meta(table, field, key):
     check_field_exists(table, field)
     comment = attributes[table][field]['comment']
+    if not comment:
+        return None
     meta = json.loads(comment)
     return meta[key] if key in meta else None
 
@@ -182,6 +192,17 @@ def field_subtype(table, field):
         return field_meta(table, field, 'subtype').strip()
     except:
         return None
+
+def field_fillable(table, field):
+    check_field_exists(table, field)
+    if field in ["id", "created_at", "updated_at"]: return False
+    if (field_meta(table,field, 'fillable') != None): 
+        return toBoolean(field_meta(table,field, 'fillable'))
+    return not toBoolean(field_meta(table,field, 'guarded'))
+    
+def field_guarded(table, field):
+    return not field_fillable(table, field)
+
 
 """
     TODO: indirect attributes access
