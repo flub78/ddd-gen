@@ -54,7 +54,11 @@ match snippet:
         print(create_validation_rules(table))
     case "fillable_list":
         print(fillable_list(table))
-
+    case "create_set_attributes":
+        print(create_set_attributes(table))
+    case "update_set_attributes":
+        print(update_set_attributes(table))
+        
     case _:
         print("unknown snippet", snippet)
 

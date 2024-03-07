@@ -70,14 +70,6 @@ class {{class}}Controller extends Controller
 
         $validator = Validator::make($request->all(), [
             {{#cg}} create_validation_rules {{/cg}}
-            'name' => 'required|string|max:255',
-            'description' => '',
-            'email' => 'email|required',
-            'favorite' => 'required|boolean',
-            'read_at' => 'date',
-            'href' => '',
-            'image' => '',
-            'theme' => 'in:light,dark',
         ]);
 
         if ($validator->fails()) {
@@ -92,14 +84,7 @@ class {{class}}Controller extends Controller
         }
 
         $element = new {{class}};
-        $element->name = $request->name;
-        $element->description = $request->description;
-        $element->email = $request->email;
-        $element->favorite = $request->favorite;
-        $element->read_at = $request->read_at;
-        $element->href = $request->href;
-        $element->image = $request->image;
-        $element->theme = $request->theme;
+        {{#cg}} create_set_attributes {{/cg}}
 
         $element->save();
 
@@ -119,14 +104,7 @@ class {{class}}Controller extends Controller
         Log::Debug("{{class}}Controller@update $id");
 
         $validator = Validator::make($request->all(), [
-            'name' => 'string|max:255',
-            'description' => '',
-            'email' => 'email',
-            'favorite' => 'boolean',
-            'read_at' => 'date',
-            'href' => '',
-            'image' => '',
-            'theme' => 'in:light,dark',
+            {{#cg}} update_validation_rules {{/cg}}
         ]);
 
         if ($validator->fails()) {
@@ -151,14 +129,7 @@ class {{class}}Controller extends Controller
             return response()->json($data, 404);
         }
 
-        $element->name = $request->name;
-        $element->description = $request->description;
-        $element->email = $request->email;
-        $element->favorite = $request->favorite;
-        $element->read_at = $request->read_at;
-        $element->href = $request->href;
-        $element->image = $request->image;
-        $element->theme = $request->theme;
+        {{#cg}} update_set_attributes {{/cg}}
         $element->save();
 
         $data = [

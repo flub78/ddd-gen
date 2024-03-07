@@ -72,6 +72,13 @@ def cg(text, render):
             code = guarded(table)
         case "create_validation_rules":
             code = create_validation_rules(table)
+        case "update_validation_rules":
+            code = update_validation_rules(table)
+        case "create_set_attributes":
+            code = create_set_attributes(table)        
+        case "update_set_attributes":
+            code = update_set_attributes(table)
+
         case _:
             code = "unknown snippet " + snippet
             print(code)
