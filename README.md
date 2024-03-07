@@ -32,4 +32,7 @@ the output can be cut and pasted to be manually inserted into source files.
 
 tpl -tp templates\Model.php -t boards
 
-tpl -tp template\ApiController.php -t boards
+tpl -tp templates\ApiController.php -t boards
+tpl -tp templates\ApiController.php -t boards -o build\BoardController.php
+tpl -tp templates\ApiController.php -t boards -o build\BoardController.php --compare references\BoardController.php
+

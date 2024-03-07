@@ -1,0 +1,198 @@
+<?php
+
+namespace App\Http\Controllers\api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Boards;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+
+/**
+ * Class BoardsController
+ *
+ * @package App\Http\Controllers\api
+ */
+class BoardsController extends Controller
+{
+    //
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+
+        $elements = Boards::all(); // SELECT * FROM boards
+
+        $data = [
+            'status' => 200,
+            'boards' => $elements,
+        ];
+
+        return response()->json($data, 200);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        Log::Debug("BoardsController@show $id");
+
+        $element = Boards::find($id); // SELECT * FROM boards WHERE id = $id
+
+        if (!$element) {
+            // 404 Not Found
+            $data = [
+                'status' => 404,
+                'message' => 'Boards not found',
+            ];
+
+            return response()->json($data, 404);
+        }
+
+        // 200 OK
+        $data = [
+            'status' => 200,
+            'board' => $element,
+        ];
+
+        return response()->json($data, 200);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        Log::Debug('BoardsController@store');
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'description' => '',
+            'email' => 'email|required',
+            'favorite' => 'required|boolean',
+            'read_at' => 'date',
+            'href' => '',
+            'image' => '',
+            'theme' => 'in:light,dark',
+        ]);
+
+        if ($validator->fails()) {
+            $data = [
+                'status' => 422,
+                'errors' => $validator->errors(),
+                'message' => 'Validation failed',
+            ];
+            Log::Debug('BoardsController@store validation failed', $data);
+
+            return response()->json($data, 422);
+        }
+
+        $element = new Boards;
+        $element->name = $request->name;
+        $element->description = $request->description;
+        $element->email = $request->email;
+        $element->favorite = $request->favorite;
+        $element->read_at = $request->read_at;
+        $element->href = $request->href;
+        $element->image = $request->image;
+        $element->theme = $request->theme;
+
+        $element->save();
+
+        $data = [
+            'status' => 200,
+            'board' => $element,
+        ];
+        Log::Debug('BoardsController@store saved in database', $data);
+        return response()->json($data, 200);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, int $id)
+    {
+        Log::Debug("BoardsController@update $id");
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'string|max:255',
+            'description' => '',
+            'email' => 'email',
+            'favorite' => 'boolean',
+            'read_at' => 'date',
+            'href' => '',
+            'image' => '',
+            'theme' => 'in:light,dark',
+        ]);
+
+        if ($validator->fails()) {
+            $data = [
+                'status' => 422,
+                'errors' => $validator->errors(),
+                'message' => 'Validation failed',
+            ];
+            Log::Debug('BoardsController@store validation failed', $data);
+
+            return response()->json($data, 422);
+        }
+
+        $element = Boards::find($id);
+
+        if (!$element) {
+            $data = [
+                'status' => 404,
+                'message' => 'Boards not found',
+            ];
+
+            return response()->json($data, 404);
+        }
+
+        $element->name = $request->name;
+        $element->description = $request->description;
+        $element->email = $request->email;
+        $element->favorite = $request->favorite;
+        $element->read_at = $request->read_at;
+        $element->href = $request->href;
+        $element->image = $request->image;
+        $element->theme = $request->theme;
+        $element->save();
+
+        $data = [
+            'status' => 200,
+            'board' => $element,
+        ];
+
+        return response()->json($data, 200);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        Log::Debug("BoardsController@delete $id");
+
+        $element = Boards::find($id);
+
+        if (!$element) {
+            $data = [
+                'status' => 404,
+                'message' => 'Boards not found',
+            ];
+
+            return response()->json($data, 404);
+        }
+
+        $element->delete();
+
+        $data = [
+            'status' => 200,
+            'message' => "Boards $id deleted",
+        ];
+
+        return response()->json($data, 200);
+    }
+}

@@ -43,7 +43,7 @@ parser.add_argument('-tp', '--template', type=str, action="store", dest="templat
 
 parser.add_argument('-o', '--output', type=str, action="store", dest="output",
                     help='name of the file to generate')
-parser.add_argument('-c', '--compare', type=str, action="store", dest="output",
+parser.add_argument('-c', '--compare', type=str, action="store", dest="compare",
                     help='compare the output with a reference file (e.g. a previous version)')
 parser.add_argument('-g', '--generator', type=str, action="store", dest="generator",
                     help='name of the code generator to use')
@@ -84,14 +84,20 @@ dict = {
     'cg': cg
 }
 
-with open(template, 'r') as f:
+res = ""
+with open(args.template, 'r') as f: 
     res = chevron.render(f, dict)
 
-    if (args.output):
-        with open(args.output, 'w') as f:
-            f.write(res)
-        if (args.verbose):
-            print(f"file {args.output} generated")
+if (args.output):
+    with open(args.output, 'w') as f:
+        f.write(res)
+    if (args.verbose):
+        print(f"file {args.output} generated")
+else:
+    print(res)
 
-    else:
-        print(res)
+if (args.compare):
+    comparator = 'WinMergeU'
+    cmd = comparator + ' ' + args.output + ' ' + args.compare
+    print(cmd)
+    os.system(cmd)
