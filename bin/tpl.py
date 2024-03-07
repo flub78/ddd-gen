@@ -72,6 +72,10 @@ def cg(text, render):
             code = guarded(table)
         case _:
             code = "unknown snippet " + snippet
+            print(code)
+            # to be able to run several code generators recognizing different snippets
+            # we must return the original text
+            return '{{#cg}}' + text + '{{/cg}}'
 
     result = render(code)
     return result
@@ -97,7 +101,7 @@ else:
     print(res)
 
 if (args.compare):
-    comparator = 'WinMergeU'
+    comparator = 'WinMergeU'        # It must be in the PATH
     cmd = comparator + ' ' + args.output + ' ' + args.compare
     print(cmd)
     os.system(cmd)

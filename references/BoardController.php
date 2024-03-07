@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 /**
  * Class BoardsController
- *
  * @package App\Http\Controllers\api
  */
 class BoardsController extends Controller
@@ -22,6 +21,7 @@ class BoardsController extends Controller
      */
     public function index()
     {
+        Log::Debug('BoardsController@index');
 
         $elements = Boards::all(); // SELECT * FROM boards
 
