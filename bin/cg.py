@@ -46,14 +46,15 @@ field = args.field if 'field' in args else ""
 snippet = args.snippet
 
 match snippet:
-    case "class":
-        print(cg_class(table))
-    case "element":
-        print(cg_element(table))
     case "guarded":
         print(field_guarded(table))
     case "csv_fields":
         print(cg_csv_fields(table))
+    case "create_validation_rules":
+        print(create_validation_rules(table))
+    case "fillable_list":
+        print(fillable_list(table))
+
     case _:
         print("unknown snippet", snippet)
 

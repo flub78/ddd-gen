@@ -70,6 +70,8 @@ def cg(text, render):
             code = cg_csv_fields(table)
         case "guarded":
             code = guarded(table)
+        case "create_validation_rules":
+            code = create_validation_rules(table)
         case _:
             code = "unknown snippet " + snippet
             print(code)

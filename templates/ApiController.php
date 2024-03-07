@@ -69,7 +69,7 @@ class {{class}}Controller extends Controller
         Log::Debug('{{class}}Controller@store');
 
         $validator = Validator::make($request->all(), [
-            {{#cg}} create-validation-rules {{/cg}}
+            {{#cg}} create_validation_rules {{/cg}}
             'name' => 'required|string|max:255',
             'description' => '',
             'email' => 'email|required',
