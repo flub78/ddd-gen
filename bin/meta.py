@@ -52,6 +52,7 @@ def print_field(table, field, full=False):
         print ("\t\t\t subtype :",field_subtype(table, field))
         print ("\t\t\t size:",field_size(table, field))
         print ("\t\t\t base_type:",field_base_type(table, field))
+        print ("\t\t\t enum_values:",field_enum_values(table, field))
         print ("\t\t\t unsigned:",field_unsigned(table, field))
 
         print ("\t\t\t collation:",field_collation(table, field))

@@ -155,17 +155,51 @@ def field_comment(table, field):
 def field_size(table, field):
     check_field_exists(table, field)
     type = attributes[table][field]['type']
-    size = re.sub(r'\D', '', type)
-    return size
 
+    reg = r'(.+)\((.*)\)'
+    match = re.match(reg, type)
+
+    if match:
+        insideBracket = match.group(2)
+        if insideBracket.isdigit():
+            return insideBracket
+        else:
+            return 0
+    else:
+        return 0
+
+"""
+    Extract the base type from the type
+    some types are just string like date, timestamp, etc.
+    some types have a size inside parenthesis like varchar(255), int(11), etc.
+    some types have a size and a number of decimal digits like decimal(10,2), float(10,2), etc.
+    some types have a range like enum('a', 'b', 'c'), set('a', 'b', 'c'), etc. 
+
+    re.search(r'\((.*?)\)',s).group(1)    
+"""
 def field_base_type(table, field):
     check_field_exists(table, field)
     type = attributes[table][field]['type']
-    base_type = re.sub(r'\d', '', type)
-    base_type = base_type.replace('(', '')
-    base_type = base_type.replace(')', '')
-    words = base_type.split()
-    return words[0]
+
+    reg = r'(.+)\((.*)\)'
+    match = re.match(reg, type)
+
+    if match:
+        return match.group(1)
+    else:
+        return type
+
+def field_enum_values(table, field):
+    check_field_exists(table, field)
+    type = attributes[table][field]['type']
+    reg = r'enum\((.*)\)'
+    match = re.match(reg, type)
+    if match:
+        insideBracket = match.group(1)
+        insideBracket = insideBracket.replace("'", "")
+        return insideBracket.split(',')
+    else:
+        return []
 
 def field_unsigned(table, field):
     check_field_exists(table, field)
