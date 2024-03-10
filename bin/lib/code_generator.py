@@ -157,7 +157,7 @@ def update_set_attributes(table):
     for field in flist:
         if (cnt):
             res = res + tabs
-        res = res + 'if (array_key_exists("' + field + '", $request)) {' + "\n"
+        res = res + 'if (property_exists("' + field + '", $request)) {' + "\n"
         res = res + tabs + "\t" + '$element->' + field + ' = $request->' + field + ";\n"
         res = res + tabs + '}' + "\n"
         cnt = cnt + 1
