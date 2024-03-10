@@ -4,10 +4,12 @@ from lib.schema import *
 
 """
     code_generator.py
+
+    Generate code for Laravel RESTful API
 """
 
 def cg_class(table):
-    return table.capitalize()
+    return table.capitalize().rstrip('s')
 
 def cg_element(table):
     return table.rstrip('s')
@@ -143,6 +145,9 @@ def create_set_attributes(table):
 
 """
     set element attributes
+
+    to test it:
+    cg -t boards -f name update_set_attributes
 """
 def update_set_attributes(table):
     flist = fillable_list(table)
@@ -152,6 +157,8 @@ def update_set_attributes(table):
     for field in flist:
         if (cnt):
             res = res + tabs
-        res = res + '$element->' + field + ' = $request->' + field + ' if "' + field + '" in $request' ";\n"
+        res = res + 'if (array_key_exists("' + field + '", $request)) {' + "\n"
+        res = res + tabs + "\t" + '$element->' + field + ' = $request->' + field + ";\n"
+        res = res + tabs + '}' + "\n"
         cnt = cnt + 1
     return res

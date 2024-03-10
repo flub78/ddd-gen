@@ -36,3 +36,13 @@ tpl -tp templates\ApiController.php -t boards
 tpl -tp templates\ApiController.php -t boards -o build\BoardController.php
 tpl -tp templates\ApiController.php -t boards -o build\BoardController.php --compare references\BoardController.php
 
+## The workflow layer
+
+It controls which files need to be generated in which directories.
+
+The most basic version is a simple batch command file codegen.bat in the build directory.
+
+	php artisan migrate:rollback --step=1
+	php artisan migrate
+
+
