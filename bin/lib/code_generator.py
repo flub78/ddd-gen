@@ -9,7 +9,7 @@ from lib.schema import *
 """
 
 def cg_class(table):
-    return table.capitalize().rstrip('s')
+    return ''.join(x.capitalize() for x in table.split('_')).rstrip('s')
 
 def cg_element(table):
     return table.rstrip('s')
@@ -90,7 +90,7 @@ def create_validation_rule(table, field, create = True):
         rules.append(f'max:{size}')
     if subtype(table, field) == 'email':
         rules.append('email')
-    if subtype(table, field) == 'boolean':
+    if subtype(table, field) == 'boolean' or field_base_type(table, field) == 'boolean':
         rules.append('boolean')
     if subtype(table, field) == 'date':
         rules.append('date')

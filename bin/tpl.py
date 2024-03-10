@@ -4,8 +4,7 @@ import argparse
 from lib.schema import *
 import chevron
 from lib.code_generator import *
-
-
+import shutil
 
 """
     tpl.py
@@ -110,6 +109,11 @@ else:
     print(res)
 
 if (args.compare):
+    if (not os.path.exists(args.compare)):
+        shutil.copyfile(args.output, args.compare)
+        print(f"file {args.compare} does did not exist, it has been created")
+        
+             
     comparator = 'WinMergeU'        # It must be in the PATH
     cmd = comparator + ' ' + args.output + ' ' + args.compare
     print(cmd)
