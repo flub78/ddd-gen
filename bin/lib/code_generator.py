@@ -27,6 +27,7 @@ def cg_table(table):
 def subtype(table, field):
     if (field_subtype(table, field)):
         return field_subtype(table, field)
+    
     if ('mail' in field):
         return 'email'
     if ('password' in field):
@@ -43,6 +44,10 @@ def subtype(table, field):
         return 'image'
     if ('file' in field):
         return 'file'
+
+    if (field_type(table, field) == 'tinyint(1)'):
+        return 'boolean'    
+
     return None
     
 
