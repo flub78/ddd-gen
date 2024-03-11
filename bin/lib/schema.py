@@ -16,6 +16,7 @@ For performance resons, the script fetches all the data and keep them in memory.
 tables = []
 field_l = {}
 attributes = {}
+foreign = {}
 
 # Utility functions
 def toBoolean(str):
@@ -23,6 +24,9 @@ def toBoolean(str):
     return str.lower() in ['true', 'yes', '1']
 
 # Database functions
+"""
+    Fetch the database schema and metadata and store them in memory
+"""
 def fetch_data(database, user, password):
     host = os.environ['META_DB_HOST'] if 'META_DB_HOST' in os.environ else 'localhost'
     port = os.environ['META_DB_PORT'] if 'META_DB_PORT' in os.environ else 3306
@@ -32,9 +36,14 @@ def fetch_data(database, user, password):
     data = {}
     for table in tables:
         data[table] = get_fields(db, database, table)
+        fetch_foreign_key_information(db, database, table)
     db.close()
+
     return data    
 
+"""
+    Get the list of tables in the database
+"""
 def get_tables(db, database):
     global tables
     cursor = db.cursor()
@@ -44,6 +53,9 @@ def get_tables(db, database):
         tables.append(table_name)
     return tables
 
+"""
+    Analyze the CLI arguments and fetch the data from the database
+"""
 def check_args_and_fetch(args):
     # Analyze CLI parameters and env variables
     database = os.environ['META_DB'] if 'META_DB' in os.environ else ""
@@ -72,6 +84,9 @@ def check_args_and_fetch(args):
     fetch_data(database, user, password)
     return database, user, password
 
+"""
+    Fetch the list of fields for a table
+"""
 def get_fields(db, database, table):
     cursor = db.cursor()
     query = " SHOW FULL COLUMNS FROM " + table + " FROM " + database
@@ -91,67 +106,138 @@ def get_fields(db, database, table):
         elt['extra'] = field[6]
         elt['privileges'] = field[7]
         elt['comment'] = field[8]
+
         attributes[table][elt['field']] = elt
         field_l[table].append(elt['field'])
     return attributes
 
+"""
+    Fetch the foreign key information for a table
+    and store them in memory
+"""
+def fetch_foreign_key_information(db, database, table):
+    fields = field_l[table]
+    cursor = db.cursor()
+    query = "SELECT CONSTRAINT_SCHEMA, CONSTRAINT_NAME, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME "
+    query = query + "FROM information_schema.KEY_COLUMN_USAGE "
+    query = query + "WHERE CONSTRAINT_SCHEMA = '" + database + "' AND TABLE_NAME = '" + table + "'" 
+    cursor.execute(query)
+    
+    foreign[table] = {}
+
+    for line in cursor:
+        referenced_table = line[4]
+        table = line[2]
+        field = line[3]
+        reference = {}
+        reference['table'] = line[4]
+        reference['field'] = line[5]
+        if (referenced_table):
+            foreign[table][field] = reference
+    return foreign
+
+"""
+    Check if a table exists 
+"""
 def check_table_exists(table):
     if table not in attributes:
         raise Exception("Table not found: " + table)
-    
+
+"""
+    Check if a field exists in a table
+"""    
 def check_field_exists(table, field):
     if table not in attributes:
         raise Exception("Table not found: " + table)
     if field not in attributes[table]:
         raise Exception("Field not found: " + field + " in table " + table)
-    
+
+"""
+    List the tables in the database
+"""    
 def table_list():
     return tables
 
+"""
+    List the fields in a table
+"""
 def field_list(table):
     check_table_exists(table)
     return field_l[table]
 
+""" 
+    return the attributes of a field
+"""
 def field_attributes(table, field):
     check_field_exists(table, field)
     return attributes[table][field]
 
+"""
+    return the name of a field
+"""
 def field_name(table, field):
     check_field_exists(table, field)
     return attributes[table][field]['field']
 
+"""
+    return the type of a field
+"""
 def field_type(table, field):
     check_field_exists(table, field)
     return attributes[table][field]['type']
 
+"""
+    return the collation of a field
+"""
 def field_collation(table, field):
     check_field_exists(table, field)
     return attributes[table][field]['collation']
 
+"""
+    return the nullability of a field
+"""
 def field_null(table, field):
     check_field_exists(table, field)
     return attributes[table][field]['null']
 
+"""
+    return the key of a field
+"""
 def field_key(table, field):
     check_field_exists(table, field)
     return attributes[table][field]['key']
 
+"""
+    return the default value of a field
+"""
 def field_default(table, field):
     check_field_exists(table, field)
     return attributes[table][field]['default']
 
+"""
+    return the extra values for a field
+"""
 def field_extra(table, field):
     check_field_exists(table, field)
     return attributes[table][field]['extra']
 
+"""
+    return the privileges of a field
+"""
 def field_privileges(table, field):
     check_field_exists(table, field)
     return attributes[table][field]['privileges']
 
+"""
+    return the comment of a field
+"""
 def field_comment(table, field):
     check_field_exists(table, field)
     return attributes[table][field]['comment']
 
+"""
+    return the size of a field
+"""
 def field_size(table, field):
     check_field_exists(table, field)
     type = attributes[table][field]['type']
@@ -175,8 +261,8 @@ def field_size(table, field):
     some types have a size and a number of decimal digits like decimal(10,2), float(10,2), etc.
     some types have a range like enum('a', 'b', 'c'), set('a', 'b', 'c'), etc. 
 
-    re.search(r'\((.*?)\)',s).group(1)    
 """
+# re.search(r'\((.*?)\)',s).group(1)    
 def field_base_type(table, field):
     check_field_exists(table, field)
     type = attributes[table][field]['type']
@@ -189,6 +275,10 @@ def field_base_type(table, field):
     else:
         return type
 
+"""
+    return the enum values of a field
+    if the field is not an enum returns an empty list
+"""
 def field_enum_values(table, field):
     check_field_exists(table, field)
     type = attributes[table][field]['type']
@@ -201,12 +291,18 @@ def field_enum_values(table, field):
     else:
         return []
 
+"""
+    return the unsignedness of a field
+"""
 def field_unsigned(table, field):
     check_field_exists(table, field)
     type = attributes[table][field]['type']
     unsigned = 'unsigned' in type
     return unsigned
 
+"""
+    return the nullable of a field
+"""
 def field_nullable(table, field):
     check_field_exists(table, field)
     null = attributes[table][field]['null']
@@ -221,12 +317,18 @@ def field_meta(table, field, key):
     meta = json.loads(comment)
     return meta[key] if key in meta else None
 
+"""
+    return the subtype of a field
+"""
 def field_subtype(table, field):
     try:
         return field_meta(table, field, 'subtype').strip()
     except:
         return None
 
+"""
+    check if a field is mass assignable
+"""
 def field_fillable(table, field):
     check_field_exists(table, field)
     if field in ["id", "created_at", "updated_at"]: return False
@@ -237,6 +339,16 @@ def field_fillable(table, field):
 def field_guarded(table, field):
     return not field_fillable(table, field)
 
+"""
+If a field is a foreign key returns information about it
+else returns None
+"""
+def field_foreign_key(table, field):
+    check_field_exists(table, field)
+    if table in foreign:
+        if field in foreign[table]:
+            return foreign[table][field]
+    return None
 
 """
     TODO: indirect attributes access
