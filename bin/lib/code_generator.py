@@ -179,5 +179,8 @@ def primary_key_declaration(table):
             if (field == 'id'):
                 return ""
             else:
-                return f"protected $primaryKey = '{field}';"
+                res = f"protected $primaryKey = '{field}';"
+                if (field_base_type(table, field) == 'varchar'):
+                    res = res + "\n\t" + "protected $keyType = 'string';"
+                return res
     return ""
