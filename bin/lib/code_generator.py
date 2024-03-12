@@ -54,7 +54,7 @@ def subtype(table, field):
 """
     Return a comma separated list of fields with double quotes for a given table
 """
-def cg_csv_fields(table):
+def csv_fields(table):
     list = field_list(table)
     list_with_quotes = [f"\"{x}\"" for x in list]
     return ", ".join(list_with_quotes)
@@ -116,10 +116,10 @@ def create_validation_rule(table, field, create = True):
 """
     Return the list of validation rules for the fillable fields of a table
 """
-def validation_rules(table, create = True):
+def validation_rules(table, ntabs = 3, create = True):
     flist = fillable_list(table)
     res = ""
-    tabs = "\t\t\t"
+    tabs = "\t"*int(ntabs)
     cnt = 0
     for field in flist:
         if (cnt):
@@ -128,14 +128,14 @@ def validation_rules(table, create = True):
         cnt = cnt + 1
     return res
 
-def create_validation_rules(table):
-    return validation_rules(table, True)
+def create_validation_rules(table, ntabs = 3):
+    return validation_rules(table, ntabs, True)
 
 """
     Return the list of validation rules for the fillable fields of a table
 """
-def update_validation_rules(table):
-    return validation_rules(table, False)
+def update_validation_rules(table, ntabs = 3):
+    return validation_rules(table, ntabs, False)
 
 """
     set element attributes
