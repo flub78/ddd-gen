@@ -171,3 +171,13 @@ def update_set_attributes(table):
         res = res + tabs + '}' + "\n"
         cnt = cnt + 1
     return res
+
+def primary_key_declaration(table):
+    flist = field_list(table)
+    for field in flist:
+        if field_is_primary_key(table, field):
+            if (field == 'id'):
+                return ""
+            else:
+                return f"protected $primaryKey = '{field}';"
+    return ""

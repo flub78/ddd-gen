@@ -75,6 +75,9 @@ def cg(text, render):
             code = create_set_attributes(table)        
         case "update_set_attributes":
             code = update_set_attributes(table)
+        case "primary_key_declaration":
+            code = primary_key_declaration(table)
+
 
         case _:
             code = "unknown snippet " + snippet

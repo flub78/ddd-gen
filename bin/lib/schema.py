@@ -350,6 +350,9 @@ def field_foreign_key(table, field):
             return foreign[table][field]
     return None
 
+def field_is_primary_key(table, field):
+    return field_key(table, field) == 'PRI'
+
 """
     TODO: indirect attributes access
 
