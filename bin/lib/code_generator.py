@@ -19,10 +19,8 @@ def cg_table(table):
 
 """
     Possible values are:
-    datetime, date, time, timestamp, year
-    url, password, email, phone, image, file, enumerate, boolean, bitfield, currency, foreign_key, color
-
-
+    url, password, email, phone, image, file, enumerate, boolean, bitfield, currency, foreign_key, color,
+    csv_int, csv_string
 """
 def subtype(table, field):
     if (field_subtype(table, field)):
@@ -143,22 +141,22 @@ def validation_rules(table, ntabs = 3, create = True):
         cnt = cnt + 1
     return res
 
-def create_validation_rules(table, ntabs = 3):
+def create_validation_rules(table, ntabs = 4):
     return validation_rules(table, ntabs, True)
 
 """
     Return the list of validation rules for the fillable fields of a table
 """
-def update_validation_rules(table, ntabs = 3):
+def update_validation_rules(table, ntabs = 4):
     return validation_rules(table, ntabs, False)
 
 """
     set element attributes
 """
-def create_set_attributes(table):
+def create_set_attributes(table, ntabs = 3):
     flist = fillable_list(table)
     res = ""
-    tabs = "\t\t"
+    tabs = "\t"*int(ntabs)
     cnt = 0
     for field in flist:
         if (cnt):
@@ -173,10 +171,10 @@ def create_set_attributes(table):
     to test it:
     cg -t boards -f name update_set_attributes
 """
-def update_set_attributes(table):
+def update_set_attributes(table, ntabs=3):
     flist = fillable_list(table)
     res = ""
-    tabs = "\t\t"
+    tabs = "\t"*int(ntabs)
     cnt = 0
     for field in flist:
         if (cnt):
