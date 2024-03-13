@@ -86,7 +86,9 @@ def guarded(table):
     Return the validation rule for one field
 """
 def create_validation_rule(table, field, create = True):
+
     rules = []
+    reg_expr = False
     if (not field_nullable(table, field)) and create:
         rules.append('required')
     if field_base_type(table, field) == 'varchar':
@@ -101,6 +103,15 @@ def create_validation_rule(table, field, create = True):
         rules.append('date')
     if subtype(table, field) == 'time':
         rules.append('time')
+    if subtype(table, field) == 'csv_int':
+        reg_expr = True
+        rules.append('regex:(\d+),?')
+    if subtype(table, field) == 'csv_string':
+        reg_expr = True
+        # 'regex:/(^([a-zA-Z]+)(\d+)?$)/u'
+        # 'regex://\'(.+?)\'|\"(.+?)\"'
+        rx = 'regex:/' + "\\\'(.+?)\\\'"  + '|' + '\\\"(.+?)\\\"' +   '/'
+        rules.append(rx)
 
     if field_base_type(table, field) == 'enum':
         values = field_enum_values(table, field)
@@ -109,9 +120,13 @@ def create_validation_rule(table, field, create = True):
     if field_foreign_key(table, field):
         fk = field_foreign_key(table, field)
         rules.append('exists:' + fk['table'] + ',' + fk['field'])
-        
-    rules_list = "|".join(rules)               
-    return f"\"{field}\" => '" +  rules_list + "',"
+
+    if (reg_expr):
+        rules_list = '[' + ", ".join( '"' + rule + '"' for rule in rules) + ']'
+        return f"\"{field}\" => " +  rules_list + ","
+    else:
+        rules_list = "|".join(rules)      
+        return f"\"{field}\" => '" +  rules_list + "',"
 
 """
     Return the list of validation rules for the fillable fields of a table
