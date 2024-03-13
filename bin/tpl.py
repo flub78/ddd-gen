@@ -78,7 +78,6 @@ def cg(text, render):
         case "primary_key_declaration":
             code = primary_key_declaration(table)
 
-
         case _:
             code = "unknown snippet " + snippet
             print(code)
