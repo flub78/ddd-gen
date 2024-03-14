@@ -4,6 +4,7 @@ import argparse
 import os
 from lib.schema import *
 from lib.code_generator import *
+from lib.template_engine import *
 
 
 """
@@ -162,11 +163,14 @@ if (args.verbose):
 
 for table in tables:
     for code in codes:
-        if (args.verbose):
-            print("generating ",code, 'for', table)
-            print ('install:', filenameToGenerate(code, table, install_dir))
-            print ('output:', outputFilename(code, table, build_dir))
-            print ('template:', templateFilename(code, templates_dir))
-            print ("")
+        # if (args.verbose):
+        #     print("generating ",code, 'for', table)
+        #     print ('install:', filenameToGenerate(code, table, install_dir))
+        #     print ('output:', outputFilename(code, table, build_dir))
+        #     print ('template:', templateFilename(code, templates_dir))
+        #     print ("")
+        process(table, templateFilename(code, templates_dir),
+            outputFilename(code, table, build_dir), 
+            filenameToGenerate(code, table, install_dir), "check", args.verbose)
 
 print ("bye ...")

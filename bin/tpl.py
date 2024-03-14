@@ -2,27 +2,17 @@
 # -*- coding:utf8 -*
 import argparse
 from lib.schema import *
-import chevron
 from lib.code_generator import *
-import shutil
+from lib.template_engine import *
 
 """
     tpl.py
 
-    Inject snippets into a mustache template. The idea is to generate code based
+    Inject snippets into a mustache template. It generates code based
     on a database schema and metadata stored as database comments.
 
-    The script can use different code generators in different contexes. 
-    For example, the same metadata can be used to generate a REST API, 
-    a React web site client, etc.
-
-    The script work on the following markers:
-    {{#cg}}  snippet definition  {{/cg}}
-
-    and replace them with the content of the snippet.
+    This script is a CLI interface to generate one file.
 """
-
-
 
 parser = argparse.ArgumentParser(
     description='Inject snippets into a mustache template. The idea is to generate code based on a database schema and metadata stored as database comments. The script can use different code generators in different contexes. For example, the same metadata can be used to generate a REST API, a React web site client, etc.', 
@@ -55,66 +45,5 @@ if (args.verbose):
     print('args', args)
 
 database, user, password = check_args_and_fetch(args)
-table = args.table
 
-def cg(text, render):
-    # print("cg:", text)
-    args = text.split()
-    snippet = args[0]
-
-    match snippet:
-        case "csv_fields":
-            code = csv_fields(table)
-        case "guarded":
-            code = guarded(table)
-        case "create_validation_rules":
-            code = create_validation_rules(table)
-        case "update_validation_rules":
-            code = update_validation_rules(table)
-        case "create_set_attributes":
-            code = create_set_attributes(table)        
-        case "update_set_attributes":
-            code = update_set_attributes(table)
-        case "primary_key_declaration":
-            code = primary_key_declaration(table)
-
-        case _:
-            code = "unknown snippet " + snippet
-            print(code)
-            # to be able to run several code generators recognizing different snippets
-            # we must return the original text
-            return '{{#cg}}' + text + '{{/cg}}'
-
-    result = render(code)
-    return result
-
-template = args.template
-dict = {
-    'class': cg_class(table),
-    'element': cg_element(table),
-    'table': table,
-    'cg': cg
-}
-
-res = ""
-with open(args.template, 'r') as f: 
-    res = chevron.render(f, dict)
-
-if (args.output):
-    with open(args.output, 'w') as f:
-        f.write(res)
-    if (args.verbose):
-        print(f"file {args.output} generated")
-else:
-    print(res)
-
-if (args.compare):
-    if (not os.path.exists(args.compare)):
-        shutil.copyfile(args.output, args.compare)
-        print(f"file {args.compare} does did not exist, it has been created")
-        
-             
-    comparator = 'WinMergeU'        # It must be in the PATH
-    cmd = comparator + ' ' + args.output + ' ' + args.compare
-    print(cmd)
-    os.system(cmd)
+process(args.table, args.template, args.output, args.compare, "compare", args.verbose)
