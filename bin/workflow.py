@@ -69,8 +69,8 @@ parser = argparse.ArgumentParser(
     description='Generate code for a project from metadata and templates',
         epilog=epilog)
 
-parser.add_argument('-a', '--action', type=str, action="store", dest="action", default="compare",
-                    help='action to perform: list, generate | compare | install')
+parser.add_argument('-a', '--action', type=str, action="store", dest="action", default="check",
+                    help='action to perform: check, generate | compare | install')
 
 parser.add_argument('-d', '--database', type=str, action="store", dest="database",
                     help='database name')
@@ -171,6 +171,6 @@ for table in tables:
         #     print ("")
         process(table, templateFilename(code, templates_dir),
             outputFilename(code, table, build_dir), 
-            filenameToGenerate(code, table, install_dir), "check", args.verbose)
+            filenameToGenerate(code, table, install_dir), args.action, args.verbose)
 
 print ("bye ...")

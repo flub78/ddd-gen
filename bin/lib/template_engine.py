@@ -89,10 +89,13 @@ def process(current_table, template, output_file, install_file, action, verbose)
             print(f"file {install_file} did not exist, it has been created")
 
     if (action == 'compare'):
-        comparator = 'WinMergeU'        # It must be in the PATH
-        cmd = comparator + ' ' + output_file + ' ' + install_file
-        print(cmd)
-        os.system(cmd)
+        if (not filecmp.cmp(output_file, install_file)):
+            comparator = 'WinMergeU'        # It must be in the PATH
+            cmd = comparator + ' ' + output_file + ' ' + install_file
+            print(cmd)
+            os.system(cmd)
+        else:
+            print("no differences for", table, os.path.basename(template))
 
     if (action == 'install'):
         shutil.copyfile(output_file, install_file)
