@@ -28,7 +28,7 @@ from lib.template_engine import *
 
     Supported code:
 
-        api_controller, api_model, all
+        api_controller, api_model, factory, api_controller_test, api_model_test
 
     supported actions:
 
@@ -42,12 +42,17 @@ from lib.template_engine import *
 epilog = 'Database, user and password can also be defined into the META_DB, META_DB_USER, META_DB_PASSWORD environment variables.'
 epilog += 'The script uses the following environment variables: WF_TEMPLATES_DIR, WF_BUILD_DIR, WF_INSTALL_DIR'
 
-default_codes = ['api_controller', 'api_model']
+# List of all templates
+default_codes = ['api_controller', 'api_model', 'factory']
 template_files = {
     'api_controller': 'ApiController.php',      #  to be converted in {{Class}}Controller.php
-    'api_model': 'Model.php'
+    'api_model': 'Model.php',
+    'factory': 'factory.php'
 }
 
+"""
+    Intalled file
+"""
 def filenameToGenerate (code, table, install_dir):
     if code == 'api_controller':
         return (os.path.join(install_dir, r'app\Http\Controllers\api', cg_class(table) + 'Controller.php'))
@@ -55,21 +60,36 @@ def filenameToGenerate (code, table, install_dir):
     if code == 'api_model':
         return (os.path.join(install_dir, r'app\Models', cg_class(table) + '.php'))
     
+    if code == 'factory':
+        return (os.path.join(install_dir, r'database\factories', cg_class(table) + 'Factory.php'))
+
+"""
+    Filename for the template
+"""
 def templateFilename (code, templates_dir):
     return os.path.join(templates_dir, template_files[code]) 
 
+"""
+    Filename for the generated file
+"""
 def outputFilename (code, table, build_dir):
     if (code == 'api_controller'):
         return os.path.join(build_dir, cg_class(table) + 'Controller.php')
     
     if (code == 'api_model'):
         return os.path.join(build_dir, cg_class(table) + '.php')    
+    
+    if (code == 'factory'):
+        return os.path.join(build_dir, cg_class(table) + 'Factory.php')
 
+"""
+================================================================================================
+"""
 parser = argparse.ArgumentParser(
     description='Generate code for a project from metadata and templates',
         epilog=epilog)
 
-parser.add_argument('-a', '--action', type=str, action="store", dest="action", default="check",
+parser.add_argument('-a', '--action', type=str, action="store", dest="action", default="generate",
                     help='action to perform: check, generate | compare | install')
 
 parser.add_argument('-d', '--database', type=str, action="store", dest="database",
@@ -99,6 +119,9 @@ args = parser.parse_args()
 if (args.verbose):
     print('args', args)
 
+"""
+    When no table are specified use all of them
+"""
 def default_tables ():
     reserved = ['failed_jobs', 'migrations', 'password_reset_tokens', 'personal_access_tokens', 'users']
     tbl = table_list()
@@ -110,6 +133,7 @@ def default_tables ():
 
 database, user, password = check_args_and_fetch(args)
 
+# Set the parameters from the environment variables and CLI parameters
 templates_dir = os.getenv('WF_TEMPLATES_DIR') if 'WF_TEMPLATES_DIR' in os.environ else ""
 if (args.template_dir):
     templates_dir = args.template_dir
@@ -122,6 +146,7 @@ install_dir = os.getenv('WF_INSTALL_DIR') if 'WF_INSTALL_DIR' in os.environ else
 if (args.install_dir):
     install_dir = args.install_dir
 
+# Check the minimal requirements for the parameters
 param_error = False
 if (templates_dir == ""):
     print("template_dir not defined")
@@ -134,7 +159,6 @@ if (build_dir == ""):
 if (install_dir == ""):
     print("install_dir not defined")
     param_error = True
-
 
 if (not args.code):
     codes = default_codes
@@ -158,17 +182,10 @@ if (args.verbose):
     print("install dir = ", install_dir)
     print("templates dir = ", templates_dir)
     print("action = ", args.action)
-    # print('tables', tables)
-    # print('codes', codes)
 
+# Generate the code
 for table in tables:
     for code in codes:
-        # if (args.verbose):
-        #     print("generating ",code, 'for', table)
-        #     print ('install:', filenameToGenerate(code, table, install_dir))
-        #     print ('output:', outputFilename(code, table, build_dir))
-        #     print ('template:', templateFilename(code, templates_dir))
-        #     print ("")
         process(table, templateFilename(code, templates_dir),
             outputFilename(code, table, build_dir), 
             filenameToGenerate(code, table, install_dir), args.action, args.verbose)

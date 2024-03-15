@@ -45,6 +45,10 @@ def cg(text, render):
             code = update_set_attributes(table)
         case "primary_key_declaration":
             code = primary_key_declaration(table)
+        case "factory_referenced_models":
+            code = factory_referenced_models(table)
+        case "factory_field_list":
+            code = factory_field_list(table)
 
         case _:
             code = "unknown snippet " + snippet
@@ -80,11 +84,14 @@ def process(current_table, template, output_file, install_file, action, verbose)
             f.write(res)
         if (verbose):
             print(f"file {output_file} generated")
-    else:
+            
+    if (action == 'generate'):
         print(res)
+        exit(0)
 
     if (install_file):
         if (not os.path.exists(install_file)):
+            print("copying", output_file, "to", install_file)
             shutil.copyfile(output_file, install_file)
             print(f"file {install_file} did not exist, it has been created")
 

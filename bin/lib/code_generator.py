@@ -185,6 +185,9 @@ def update_set_attributes(table, ntabs=3):
         cnt = cnt + 1
     return res
 
+"""
+    when the primary key is not bigint('id') we must declare it
+"""
 def primary_key_declaration(table):
     flist = field_list(table)
     for field in flist:
@@ -197,3 +200,54 @@ def primary_key_declaration(table):
                     res = res + "\n\t" + "protected $keyType = 'string';"
                 return res
     return ""
+
+"""
+    return a list of models referenced by a factory
+"""
+def factory_referenced_models(table):
+    flist = fillable_list(table)
+    res = ""
+    for field in flist:
+        if field_foreign_key(table, field):
+            fk = field_foreign_key(table, field)
+            res = res + f"use App\\Models\\{fk['table']};\n"
+    return res
+
+"""
+    return a faker line for a field
+"""
+def factory_field(table, field):
+    if field_foreign_key(table, field):
+        fk = field_foreign_key(table, field)
+        return f"'{field}' => {fk['table']}::inRandomOrder()->first()->id,"
+    if field_base_type(table, field) == 'varchar':
+        return f"'{field}' => $this->faker->word,"
+    if field_base_type(table, field) == 'int':
+        return f"'{field}' => $this->faker->randomNumber(5),"
+    if field_base_type(table, field) == 'tinyint':
+        return f"'{field}' => $this->faker->boolean,"
+    if field_base_type(table, field) == 'enum':
+        values = field_enum_values(table, field)
+        return f"'{field}' => $this->faker->randomElement({values}),"
+    if field_base_type(table, field) == 'date':
+        return f"'{field}' => $this->faker->date(),"
+    if field_base_type(table, field) == 'time':
+        return f"'{field}' => $this->faker->time(),"
+    if field_base_type(table, field) == 'datetime':
+        return f"'{field}' => $this->faker->dateTime(),"
+    if field_base_type(table, field) == 'timestamp':
+        return f"'{field}' => $this->faker->dateTime(),"
+    if field_base_type(table, field) == 'text':
+        return f"'{field}' => $this->faker->text,"
+    return f"'{field}' => $this->faker->word,"
+
+
+"""
+    return a list of fields creation methods for a factory
+"""
+def factory_field_list(table):
+    flist = fillable_list(table)
+    res = ""
+    for field in flist:
+        res = res + "\t\t" + factory_field(table, field) + "\n"
+    return res
