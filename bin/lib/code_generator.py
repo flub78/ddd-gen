@@ -22,7 +22,7 @@ def cg_table(table):
     url, password, email, phone, image, file, enumerate, boolean, bitfield, currency, foreign_key, color,
     csv_int, csv_string
 """
-def subtype(table, field):
+def cg_subtype(table, field):
     if (field_subtype(table, field)):
         return field_subtype(table, field)
     
@@ -101,9 +101,11 @@ def create_validation_rule(table, field, create = True):
         rules.append('date')
     if subtype(table, field) == 'time':
         rules.append('time')
+
     if subtype(table, field) == 'csv_int':
         reg_expr = True
-        rules.append('regex:(\d+),?')
+        rules.append(r'regex:(\d+),?')
+
     if subtype(table, field) == 'csv_string':
         reg_expr = True
         # 'regex:/(^([a-zA-Z]+)(\d+)?$)/u'
@@ -217,37 +219,65 @@ def factory_referenced_models(table):
     return a faker line for a field
 """
 def factory_field(table, field):
+
+    subtype = cg_subtype(table, field)
+    # print(table, field, f"subtype: {subtype}")
+
+    # this one needs to be confirmed after some experiment, it could match
+    # too many cases
+    if ('name' in field):
+        return f"'{field}' => $this->faker->unique()->name,"        
+
+    if subtype == 'email':
+        return f"'{field}' => $this->faker->unique()->safeEmail,"
+    
     if field_foreign_key(table, field):
         fk = field_foreign_key(table, field)
         return f"'{field}' => {fk['table']}::inRandomOrder()->first()->id,"
+    
     if field_base_type(table, field) == 'varchar':
-        return f"'{field}' => $this->faker->word,"
+        size = field_size(table, field)
+        nb = int(size / 15)
+        return f"'{field}' => $this->faker->sentence({nb}),"
+    
     if field_base_type(table, field) == 'int':
         return f"'{field}' => $this->faker->randomNumber(5),"
+    
     if field_base_type(table, field) == 'tinyint':
         return f"'{field}' => $this->faker->boolean,"
+    
     if field_base_type(table, field) == 'enum':
         values = field_enum_values(table, field)
         return f"'{field}' => $this->faker->randomElement({values}),"
+    
     if field_base_type(table, field) == 'date':
         return f"'{field}' => $this->faker->date(),"
+    
     if field_base_type(table, field) == 'time':
         return f"'{field}' => $this->faker->time(),"
+    
     if field_base_type(table, field) == 'datetime':
         return f"'{field}' => $this->faker->dateTime(),"
+    
     if field_base_type(table, field) == 'timestamp':
         return f"'{field}' => $this->faker->dateTime(),"
+    
     if field_base_type(table, field) == 'text':
         return f"'{field}' => $this->faker->text,"
+    
     return f"'{field}' => $this->faker->word,"
 
 
 """
     return a list of fields creation methods for a factory
 """
-def factory_field_list(table):
+def factory_field_list(table, indent=2):
     flist = fillable_list(table)
     res = ""
+    cnt = 0
+    tabs = "\t"*indent
     for field in flist:
-        res = res + "\t\t" + factory_field(table, field) + "\n"
+        if (cnt): res = res + tabs
+        res = res + factory_field(table, field) + "\n"
+        cnt = cnt + 1
     return res

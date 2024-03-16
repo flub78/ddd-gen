@@ -248,7 +248,7 @@ def field_size(table, field):
     if match:
         insideBracket = match.group(2)
         if insideBracket.isdigit():
-            return insideBracket
+            return int(insideBracket)
         else:
             return 0
     else:
@@ -350,15 +350,22 @@ def field_foreign_key(table, field):
             return foreign[table][field]
     return None
 
+"""
+    Check if a field is a primary key
+"""
 def field_is_primary_key(table, field):
     return field_key(table, field) == 'PRI'
 
 """
+    returns the primary field of a table
+"""
+def primary_field(table):
+    for f in field_list(table):
+        if field_is_primary_key(table, f):
+            return f
+    return None
+
+"""
     TODO: indirect attributes access
-
-    field_is_foreign_key check if the field is a foreign key returns a boolean
-    field_foreign_table  returns the foreign table or null
-    field_foreign_field  returns the foreign field or null
-
     I likely also need information about allowed ranges, allowed values, etc.
 """
