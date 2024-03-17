@@ -332,6 +332,8 @@ def field_subtype(table, field):
 def field_fillable(table, field):
     check_field_exists(table, field)
     if field in ["id", "created_at", "updated_at"]: return False
+    # if field_is_primary_key(table, field): return False
+
     if (field_meta(table,field, 'fillable') != None): 
         return toBoolean(field_meta(table,field, 'fillable'))
     return not toBoolean(field_meta(table,field, 'guarded'))
@@ -355,6 +357,9 @@ def field_foreign_key(table, field):
 """
 def field_is_primary_key(table, field):
     return field_key(table, field) == 'PRI'
+
+def field_is_unique(table, field):
+    return field_key(table, field) == 'UNI'
 
 """
     returns the primary field of a table

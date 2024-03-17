@@ -43,11 +43,12 @@ epilog = 'Database, user and password can also be defined into the META_DB, META
 epilog += 'The script uses the following environment variables: WF_TEMPLATES_DIR, WF_BUILD_DIR, WF_INSTALL_DIR'
 
 # List of all templates
-default_codes = ['api_controller', 'api_model', 'factory']
+default_codes = ['api_controller', 'api_model', 'factory', 'model_test']
 template_files = {
     'api_controller': 'ApiController.php',      #  to be converted in {{Class}}Controller.php
     'api_model': 'Model.php',
-    'factory': 'factory.php'
+    'factory': 'factory.php',
+    'model_test': 'ModelTest.php',
 }
 
 """
@@ -62,6 +63,9 @@ def filenameToGenerate (code, table, install_dir):
     
     if code == 'factory':
         return (os.path.join(install_dir, r'database\factories', cg_class(table) + 'Factory.php'))
+    
+    if code == 'model_test':
+        return (os.path.join(install_dir, r'tests\unit', cg_class(table) + 'ModelTest.php'))
 
 """
     Filename for the template
@@ -81,6 +85,9 @@ def outputFilename (code, table, build_dir):
     
     if (code == 'factory'):
         return os.path.join(build_dir, cg_class(table) + 'Factory.php')
+    
+    if (code == 'model_test'):
+        return os.path.join(build_dir, cg_class(table) + 'ModelTest.php')
 
 """
 ================================================================================================
@@ -96,7 +103,7 @@ parser.add_argument('-d', '--database', type=str, action="store", dest="database
                     help='database name')
 
 parser.add_argument('-c', '--code', type=str,  action="append",
-                    help='type of code to generate: api_controller | api_model')
+                    help='type of code to generate: api_controller | api_model | factory | model_test')
 
 parser.add_argument('-u', '--user', type=str, action="store", dest="user",
                     help='database user')

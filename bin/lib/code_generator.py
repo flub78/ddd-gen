@@ -64,9 +64,34 @@ def fillable_list(table):
     list = []
     flist = field_list(table)
     for field in flist:
-        if not field_guarded(table, field):
-            list.append(field)
+        if field_guarded(table, field):
+            continue
+        list.append(field)
     return list
+
+def high_variability_list(table):
+    list = []
+    flist = field_list(table)
+    for field in flist:
+        if field_is_primary_key(table, field):
+            continue
+        if field_guarded(table, field):
+            continue
+        if field_is_unique(table, field):
+            continue
+        if field_base_type(table, field) == 'tinyint':
+            continue
+        if field_base_type(table, field) == 'enum':
+            continue
+        if field_foreign_key(table, field):
+            continue
+        list.append(field)
+    return list
+
+def csv_high_variability_fields(table):
+    list = high_variability_list(table)
+    list_with_quotes = [f"\"{x}\"" for x in list]
+    return ", ".join(list_with_quotes)
 
 """
     Return a comma separated list of not fillable (guarded) fields with double quotes for a given table
@@ -89,24 +114,29 @@ def create_validation_rule(table, field, create = True):
     reg_expr = False
     if (not field_nullable(table, field)) and create:
         rules.append('required')
+
     if field_base_type(table, field) == 'varchar':
         rules.append('string')
         size = field_size(table, field)
         rules.append(f'max:{size}')
-    if subtype(table, field) == 'email':
+
+    if cg_subtype(table, field) == 'email':
         rules.append('email')
-    if subtype(table, field) == 'boolean' or field_base_type(table, field) == 'boolean':
+
+    if cg_subtype(table, field) == 'boolean' or field_base_type(table, field) == 'boolean':
         rules.append('boolean')
-    if subtype(table, field) == 'date':
+
+    if cg_subtype(table, field) == 'date':
         rules.append('date')
-    if subtype(table, field) == 'time':
+
+    if cg_subtype(table, field) == 'time':
         rules.append('time')
 
-    if subtype(table, field) == 'csv_int':
+    if cg_subtype(table, field) == 'csv_int':
         reg_expr = True
         rules.append(r'regex:(\d+),?')
 
-    if subtype(table, field) == 'csv_string':
+    if cg_subtype(table, field) == 'csv_string':
         reg_expr = True
         # 'regex:/(^([a-zA-Z]+)(\d+)?$)/u'
         # 'regex://\'(.+?)\'|\"(.+?)\"'
@@ -230,6 +260,12 @@ def factory_field(table, field):
 
     if subtype == 'email':
         return f"'{field}' => $this->faker->unique()->safeEmail,"
+    
+    
+    if subtype == 'csv_string':
+        size = field_size(table, field)
+        nb = int(size / 25)
+        return f"'{field}' => $this->faker->csv_string({nb}),"
     
     if field_foreign_key(table, field):
         fk = field_foreign_key(table, field)

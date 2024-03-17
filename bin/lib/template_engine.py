@@ -49,6 +49,8 @@ def cg(text, render):
             code = factory_referenced_models(table)
         case "factory_field_list":
             code = factory_field_list(table)
+        case "csv_high_variability_fields":
+            code = csv_high_variability_fields(table)
 
         case _:
             code = "unknown snippet " + snippet
