@@ -17,6 +17,9 @@ def cg_element(table):
 def cg_table(table):
     return table
 
+def cg_primary_key(table):
+    return primary_key(table)
+
 """
     Possible values are:
     url, password, email, phone, image, file, enumerate, boolean, bitfield, currency, foreign_key, color,

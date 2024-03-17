@@ -74,6 +74,7 @@ def process(current_table, template, output_file, install_file, action, verbose)
        'class': cg_class(table),
         'element': cg_element(table),
         'table': table,
+        'primary_key': cg_primary_key(table),
         'cg': cg
     }
 

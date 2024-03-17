@@ -364,7 +364,7 @@ def field_is_unique(table, field):
 """
     returns the primary field of a table
 """
-def primary_field(table):
+def primary_key(table):
     for f in field_list(table):
         if field_is_primary_key(table, f):
             return f
