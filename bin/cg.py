@@ -4,7 +4,6 @@ import argparse
 from lib.schema import *
 from lib.code_generator import *
 
-
 """
     cg.py
 
@@ -19,17 +18,7 @@ The simpliest user interface is likely tp pass a set of positional arguments wit
 
 epilog = """
 Database, user and password can also be define into the META_DB, META_DB_USER, META_DB_PASSWORD environment variables.
-
-Supported snippets and their arguments are:
 """
-
-epilog += "\n"
-epilog += "guarded table, \n"
-epilog += "csv_fields table, \n"
-epilog += "create_validation_rules table, \n"
-epilog += "fillable_list table, \n"
-epilog += "create_set_attributes table, \n"
-epilog += "update_set_attributes table, \n"
 
 
 parser = argparse.ArgumentParser(
@@ -42,14 +31,15 @@ parser.add_argument('-d', '--database', type=str, action="store", dest="database
                     help='database name')
 parser.add_argument('-g', '--generator', type=str, action="store", dest="generator",
                     help='name of the code generator to use')
+
+parser.add_argument('-l', '--list', action="store_true", dest="list",
+                    help='list of the supported snippets')
+
 parser.add_argument('-u', '--user', type=str, action="store", dest="user",
                     help='database user')
 parser.add_argument('-p', '--password', type=str, action="store", dest="password",
                     help='database user')
-# parser.add_argument('-t', '--table', type=str, action="store", dest="table",
-#                     help='table name')
-# parser.add_argument('-f', '--field', type=str, action="store", dest="field",
-#                     help='field name')
+
 parser.add_argument('snippet', type=str, action="store",
                     help='snippet to generate')
 parser.add_argument('cg_args', type=str, action="store",  nargs='*',
@@ -67,6 +57,16 @@ field = args.field if 'field' in args else ""
 snippet = args.snippet
 cg_arg = args.cg_args
 
+snippets = ["cg_class", "cg_element", "cg_table", "cg_primary_key",
+             "cg_subtype", "csv_fields", "guarded", "create_validation_rules",
+             "update_validation_rules", "create_set_attributes", "update_set_attributes",
+             "primary_key_declaration", "factory_referenced_models", "factory_field_list",
+             "csv_high_variability_fields"]
+if (args.list):
+    print("supported snippets:")
+    for s in snippets:
+        print(s)
+    exit(0)
 """
 The following code is likely to be considered as evil because it uses eval to call the code generator functions. This is a security risk. 
 The code generator function should be called by name 
