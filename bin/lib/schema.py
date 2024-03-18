@@ -359,7 +359,7 @@ def field_is_primary_key(table, field):
     return field_key(table, field) == 'PRI'
 
 def field_is_unique(table, field):
-    return field_key(table, field) == 'UNI'
+    return field_key(table, field) == 'UNI' or field_is_primary_key(table, field)
 
 """
     returns the primary field of a table

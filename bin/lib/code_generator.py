@@ -256,18 +256,23 @@ def factory_field(table, field):
     subtype = cg_subtype(table, field)
     # print(table, field, f"subtype: {subtype}")
 
+    unique = 'unique()->' if (field_is_unique(table, field)) else ''
+
+    if (field_meta(table, field, 'faker')):
+        return f"'{field}' => $this->faker->{unique}{field_meta(table, field, 'faker')},"
+    
     # this one needs to be confirmed after some experiment, it could match
     # too many cases
     if ('name' in field):
-        return f"'{field}' => $this->faker->unique()->name,"        
+        return f"'{field}' => $this->faker->{unique}name,"        
 
     if subtype == 'email':
-        return f"'{field}' => $this->faker->unique()->safeEmail,"
+        return f"'{field}' => $this->faker->{unique}safeEmail,"
     
     
     if subtype == 'csv_string':
         size = field_size(table, field)
-        nb = int(size / 25)
+        nb = 6
         return f"'{field}' => $this->faker->csv_string({nb}),"
     
     if field_foreign_key(table, field):
@@ -277,7 +282,7 @@ def factory_field(table, field):
     if field_base_type(table, field) == 'varchar':
         size = field_size(table, field)
         nb = int(size / 15)
-        return f"'{field}' => $this->faker->sentence({nb}),"
+        return f"'{field}' => $this->faker->{unique}sentence({nb}),"
     
     if field_base_type(table, field) == 'int':
         return f"'{field}' => $this->faker->randomNumber(5),"
@@ -304,13 +309,13 @@ def factory_field(table, field):
     if field_base_type(table, field) == 'text':
         return f"'{field}' => $this->faker->text,"
     
-    return f"'{field}' => $this->faker->word,"
+    return f"'{field}' => $this->faker->{unique}word,"
 
 
 """
     return a list of fields creation methods for a factory
 """
-def factory_field_list(table, indent=2):
+def factory_field_list(table, indent=3):
     flist = fillable_list(table)
     res = ""
     cnt = 0
