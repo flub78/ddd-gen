@@ -245,7 +245,8 @@ def factory_referenced_models(table):
     for field in flist:
         if field_foreign_key(table, field):
             fk = field_foreign_key(table, field)
-            res = res + f"use App\\Models\\{fk['table']};\n"
+            model = cg_class(fk['table'])
+            res = res + f"use App\\Models\\{model};\n"
     return res
 
 """
@@ -277,7 +278,10 @@ def factory_field(table, field):
     
     if field_foreign_key(table, field):
         fk = field_foreign_key(table, field)
-        return f"'{field}' => {fk['table']}::inRandomOrder()->first()->id,"
+        target_table = fk['table']
+        target_model = cg_class(target_table)
+        target_key = cg_primary_key(target_table)
+        return f"'{field}' => {target_model}::inRandomOrder()->first()->{target_key},"
     
     if field_base_type(table, field) == 'varchar':
         size = field_size(table, field)
