@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding:utf8 -*
 import argparse
+import sys
 from lib.schema import *
 
 """
@@ -96,7 +97,12 @@ args = parser.parse_args()
 if (args.verbose):
     print('args', args)
 
-database, user, password = check_args_and_fetch(args)
+
+try:
+    database, user, password = check_args_and_fetch(args)
+except Exception as e:
+    print(e)
+    exit(1)
 
 if (args.table):
     if (args.field):
