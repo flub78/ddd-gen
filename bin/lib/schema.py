@@ -308,7 +308,12 @@ def field_nullable(table, field):
     null = attributes[table][field]['null']
     return null == 'YES'
 
-# Indirect metadata functions
+"""
+    return the metadata of a field
+
+    The metadata is stored in the comment field of the database
+    Todo: also the 'metadata' table. The metadata table takes precedence. 
+"""
 def field_meta(table, field, key):
     check_field_exists(table, field)
     comment = attributes[table][field]['comment']
@@ -322,7 +327,51 @@ def field_meta(table, field, key):
 """
 def field_subtype(table, field):
     try:
-        return field_meta(table, field, 'subtype').strip()
+        subtype = field_meta(table, field, 'subtype')
+        if subtype != None:
+            return subtype
+        
+        """
+        Conventions over configuration.
+        if subtype has not been defined in the metadata it can be deduced from the field name
+        """
+
+        if 'image' in field:
+            return 'image'
+        if 'file' in field:
+            return 'file'
+        if 'password' in field:
+            return 'password'
+        if 'email' in field:
+            return 'email'
+        if 'url' in field:
+            return 'url'
+        if 'phone' in field:
+            return 'phone'
+
+        base_type = field_base_type(table, field)
+        if base_type in ['int', 'tinyint', 'smallint', 'mediumint', 'bigint']:
+            return 'integer'
+        if base_type in ['decimal', 'float', 'double']:
+            return 'float'
+        if base_type in ['bool', 'boolean']:
+            return 'boolean'
+        if base_type == 'date':
+            return 'date'
+        if base_type == 'datetime':
+            return 'datetime'           
+        if base_type in [ 'timestamp', 'time']:
+            return 'time'
+        if  base_type in ['text', 'tinytext', 'mediumtext', 'longtext']:
+            return 'text'
+        if base_type in ['char', 'varchar']:
+            return 'string'
+        if base_type in ['enum']:
+            return 'enum'
+        if base_type in ['set']:
+            return 'set'
+        if base_type in ['binary', 'varbinary', 'blob', 'tinyblob', 'mediumblob', 'longblob']:
+            return 'binary'
     except:
         return None
 
