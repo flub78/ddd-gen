@@ -11,7 +11,7 @@ boolean
 char        fix size string
 enum
 date
-datetime    from '1000-01-01 00:00:00' to '9999-12-31 23:59:59'
+datetime    
 decimal
 double
 float
@@ -24,18 +24,33 @@ varchar
 
 
 ## Subtypes
+boolean
+color
+csv_int
+csv_string
+currency         {"subtype": "currency", "currency": "euro"}
+date
+datetime        from '1000-01-01 00:00:00' to '9999-12-31 23:59:59'
+decimal
+double
+email
 
-int.bitfield, bigint.bitfield       use rather a set
-decimal.currency
-    {"subtype": "currency", "currency": "euro"}
-varchar.csv_int
-varchar.csv_string
-varchar.email
-varchar.enumerate                   use rather enum
-varchar.file
-varchar.json
-varchar.image
-varchar.url
+enum
+file
+float
+foreign_key
+image
+integer
+json
+password
+password_confirmation
+string
+
+text
+time            from '-838:59:59' to '838:59:59'
+timestamp       number of seconds since the Unix epoch ('1970-01-01 00:00:00' UTC)
+set
+url   
 
 
 ## Currency
