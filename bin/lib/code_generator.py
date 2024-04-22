@@ -214,7 +214,7 @@ def update_set_attributes(table, ntabs=3):
     for field in flist:
         if (cnt):
             res = res + tabs
-        res = res + 'if ($request->' + field + ') {' + "\n"
+        res = res + "if ($request->exists('" + field + "')) {" + "\n"
         res = res + tabs + "\t" + '$element->' + field + ' = $request->' + field + ";\n"
         res = res + tabs + '}' + "\n"
         cnt = cnt + 1
