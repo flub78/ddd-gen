@@ -15,7 +15,8 @@ For performance resons, the script fetches all the data and keep them in memory.
 """
 tables = []
 field_l = {}
-attributes = {}
+attributes = {}     # attributes[table][field]['field'|'type'|'collation'|'null'|'key'|'default'|'extra'|'privileges'|'comment']
+metadata = {}           # meta[table][field]['subtype'|'fillable'|'guarded'|'hidden'|'label'|'help'|'placeholder'|'class'|'options'|'rules'|'validation']
 foreign = {}
 
 # Utility functions
@@ -37,10 +38,11 @@ def fetch_data(database, user, password):
     for table in tables:
         data[table] = get_fields(db, database, table)
         fetch_foreign_key_information(db, database, table)
+        fetch_metadata(db, database, table)
     db.close()
 
-    return data    
-
+    return data
+ 
 """
     Get the list of tables in the database
 """
@@ -91,6 +93,44 @@ def get_fields(db, database, table):
     cursor = db.cursor()
     query = " SHOW FULL COLUMNS FROM " + table + " FROM " + database
     cursor.execute(query)
+    field_l[table] = []
+    attributes[table] = {}
+    metadata[table] = {}
+    for field in cursor:
+        # fields.append(id, type, collation, null, key, extra, privileges, comment)
+
+        elt = {}
+        elt['field'] = field[0]
+        elt['type'] = field[1]
+        elt['collation'] = field[2]
+        elt['null'] = field[3]
+        elt['key'] = field[4]
+        elt['default'] = field[5]
+        elt['extra'] = field[6]
+        elt['privileges'] = field[7]
+        elt['comment'] = field[8]
+
+        attributes[table][elt['field']] = elt
+        field_l[table].append(elt['field'])
+
+        # metadata
+        metadata[table][elt['field']] = {}
+        if elt['comment']:
+            comment_meta = json.loads(elt['comment'])
+            for key in comment_meta:
+                metadata[table][elt['field']][key] = comment_meta[key]
+                # print (table, elt['field'], key, metadata[table][elt['field']][key])
+    return attributes
+
+"""
+    Fetch the metadata for a table
+"""
+def fetch_metadata(db, database, table):
+    return
+    cursor = db.cursor()
+    query = " SHOW FULL COLUMNS FROM " + table + " FROM " + database
+    cursor.execute(query)
+
     field_l[table] = []
     attributes[table] = {}
     for field in cursor:
@@ -316,11 +356,17 @@ def field_nullable(table, field):
 """
 def field_meta(table, field, key):
     check_field_exists(table, field)
-    comment = attributes[table][field]['comment']
-    if not comment:
+
+    if table not in metadata:
         return None
-    meta = json.loads(comment)
-    return meta[key] if key in meta else None
+    
+    if field not in metadata[table]:
+        return None
+
+    if key not in metadata[table][field]:
+        return None
+    
+    return metadata[table][field][key]
 
 """
     return the subtype of a field
@@ -372,7 +418,10 @@ def field_subtype(table, field):
             return 'set'
         if base_type in ['binary', 'varbinary', 'blob', 'tinyblob', 'mediumblob', 'longblob']:
             return 'binary'
-    except:
+        
+    except Exception as e:
+        print ("Exception in field_subtype: ", e)
+        return "exception "
         return None
 
 """
