@@ -126,30 +126,31 @@ def get_fields(db, database, table):
     Fetch the metadata for a table
 """
 def fetch_metadata(db, database, table):
-    return
+    
     cursor = db.cursor()
     query = " SHOW FULL COLUMNS FROM " + table + " FROM " + database
+    query = "SELECT * FROM `metadata` WHERE `table`='" + table + "';"
     cursor.execute(query)
 
-    field_l[table] = []
-    attributes[table] = {}
-    for field in cursor:
-        # fields.append(id, type, collation, null, key, extra, privileges, comment)
+    for line in cursor:
+        # print (line)
+        field = line[2]
+        key = line[3]
+        value = line[4]
 
-        elt = {}
-        elt['field'] = field[0]
-        elt['type'] = field[1]
-        elt['collation'] = field[2]
-        elt['null'] = field[3]
-        elt['key'] = field[4]
-        elt['default'] = field[5]
-        elt['extra'] = field[6]
-        elt['privileges'] = field[7]
-        elt['comment'] = field[8]
-
-        attributes[table][elt['field']] = elt
-        field_l[table].append(elt['field'])
-    return attributes
+        if table not in metadata:
+            metadata[table] = {}
+        if field not in metadata[table]:
+            metadata[table][field] = {}
+        
+        # Is it a good idea to be flexible here ?
+        # May be that I should be strict and only accept fell formed json
+        if key == 'json' and value != None and value != "":
+            json_list = json.loads(value)
+            for elt in json_list:
+                metadata[table][field][elt] = json_list[elt]
+        else:
+            metadata[table][field][key] = value
 
 """
     Fetch the foreign key information for a table
@@ -351,8 +352,7 @@ def field_nullable(table, field):
 """
     return the metadata of a field
 
-    The metadata is stored in the comment field of the database
-    Todo: also the 'metadata' table. The metadata table takes precedence. 
+    metadata has already been fetched from the database and stored in memory
 """
 def field_meta(table, field, key):
     check_field_exists(table, field)
@@ -421,7 +421,7 @@ def field_subtype(table, field):
         
     except Exception as e:
         print ("Exception in field_subtype: ", e)
-        return "exception "
+        return "exception"
         return None
 
 """

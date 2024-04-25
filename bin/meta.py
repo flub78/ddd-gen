@@ -95,13 +95,15 @@ parser.add_argument('-p', '--password', type=str, action="store", dest="password
 args = parser.parse_args()
 
 if (args.verbose):
-    print('args', args)
+    print('args = ', args)
 
 
 try:
     database, user, password = check_args_and_fetch(args)
 except Exception as e:
+    print(type(e))
     print(e)
+    print(e.args)
     exit(1)
 
 if (args.table):
