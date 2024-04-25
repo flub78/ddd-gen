@@ -8,7 +8,7 @@ However it is not so convenient, every update of the metadata implies to erase, 
 
 Something a little more flexible is to use a special table in the database.
 
-It is possible to modify it on the fly and the seed procedure can be generated from the table itself. https://github.com/orangehill/iseed
+It is possible to modify it on the fly and the seed procedure can be generated from the table itself. See below.
 
 
 ## Metadata structure
@@ -38,6 +38,14 @@ reject incorrect values for table and column. Easy to do do if I implement a Lar
 
 
 
+## Generation of the seed from the database
 
+https://github.com/orangehill/iseed
+
+    composer require orangehill/iseed
+
+    php artisan iseed metadata
+
+    php artisan iseed metadata --env=testing
 
 
