@@ -44,19 +44,19 @@ epilog += 'The script uses the following environment variables: WF_TEMPLATES_DIR
 
 # List of all templates
 default_codes = ['api_controller', 'api_model', 'factory', 'test_model', 'test_api',
-                  'react_list_page', 'react_create_page', 'react_edit_page', 'react_list_component', 'react_edit_form_component', 'react_create_form_component']
+                  'react_list_page', 'react_create_page', 'react_edit_page', 'react_list', 'react_edit_form', 'react_create_form']
 template_files = {
     'api_controller': 'ApiController.php',      #  to be converted in {{Class}}Controller.php
     'api_model': 'Model.php',
     'factory': 'factory.php',
     'test_model': 'ModelTest.php',
     'test_api': 'ApiControllerTest.php',
-    'react_list_page' : 'ListPage.js', 
+    'react_list_page' : 'ListPage.js.mustache', 
     'react_create_page': 'CreatePage.js',
     'react_edit_page': 'EditPage.js',
-    'react_list_component': 'ListComponent.js',
-    'react_edit_form_component': 'EditFormComponent.js',
-    'react_create_form_component': 'CreateFormComponent.js'
+    'react_list': 'List.js',
+    'react_edit_form': 'EditForm.js',
+    'react_create_form': 'CreateForm.js'
 }
 
 """
@@ -89,14 +89,14 @@ def filenameToGenerate (code, table, install_dir):
     if code == 'react_edit_page':
         return (os.path.join(install_dir, r'src\pages', cg_class(table) + 'EditPage.js'))
     
-    if code == 'react_list_component':
-        return (os.path.join(install_dir, r'src\components', cg_class(table) + 'ListComponent.js'))
+    if code == 'react_list':
+        return (os.path.join(install_dir, r'src\components', cg_class(table) + 'List.js'))
     
-    if code == 'react_edit_form_component':
-        return (os.path.join(install_dir, r'src\components', cg_class(table) + 'EditFormComponent.js'))
+    if code == 'react_edit_form':
+        return (os.path.join(install_dir, r'src\components', cg_class(table) + 'EditForm.js'))
     
-    if code == 'react_create_form_component':
-        return (os.path.join(install_dir, r'src\components', cg_class(table) + 'CreateFormComponent.js'))
+    if code == 'react_create_form':
+        return (os.path.join(install_dir, r'src\components', cg_class(table) + 'CreateForm.js'))
 
 """
     Filename for the template
@@ -134,14 +134,14 @@ def outputFilename (code, table, build_dir):
     if code == 'react_edit_page':
         return os.path.join(build_dir, cg_class(table) + 'EditPage.js')
     
-    if code == 'react_list_component':
-        return os.path.join(build_dir, cg_class(table) + 'ListComponent.js')
+    if code == 'react_list':
+        return os.path.join(build_dir, cg_class(table) + 'List.js')
     
-    if code == 'react_edit_form_component':
-        return os.path.join(build_dir, cg_class(table) + 'EditFormComponent.js')
+    if code == 'react_edit_form':
+        return os.path.join(build_dir, cg_class(table) + 'EditForm.js')
     
-    if code == 'react_create_form_component':
-        return os.path.join(build_dir, cg_class(table) + 'CreateFormComponent.js')
+    if code == 'react_create_form':
+        return os.path.join(build_dir, cg_class(table) + 'CreateForm.js')
 
 """
 ================================================================================================
@@ -157,7 +157,7 @@ parser.add_argument('-d', '--database', type=str, action="store", dest="database
                     help='database name')
 
 parser.add_argument('-c', '--code', type=str,  action="append",
-                    help='type of code to generate: api_controller | api_model | factory | test_model | test_api')
+                    help='type of code to generate: api_controller | api_model | factory | test_model | test_api | react_list_page | react_create_page | react_edit_page | react_list | react_edit_form | react_create_form')
 
 parser.add_argument('-u', '--user', type=str, action="store", dest="user",
                     help='database user')
