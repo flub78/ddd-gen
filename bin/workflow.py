@@ -43,19 +43,27 @@ epilog = 'Database, user and password can also be defined into the META_DB, META
 epilog += 'The script uses the following environment variables: WF_TEMPLATES_DIR, WF_BUILD_DIR, WF_INSTALL_DIR'
 
 # List of all templates
-default_codes = ['api_controller', 'api_model', 'factory', 'test_model', 'test_api']
+default_codes = ['api_controller', 'api_model', 'factory', 'test_model', 'test_api',
+                  'react_list_page', 'react_create_page', 'react_edit_page', 'react_list_component', 'react_edit_form_component', 'react_create_form_component']
 template_files = {
     'api_controller': 'ApiController.php',      #  to be converted in {{Class}}Controller.php
     'api_model': 'Model.php',
     'factory': 'factory.php',
     'test_model': 'ModelTest.php',
-    'test_api': 'ApiControllerTest.php'
+    'test_api': 'ApiControllerTest.php',
+    'react_list_page' : 'ListPage.js', 
+    'react_create_page': 'CreatePage.js',
+    'react_edit_page': 'EditPage.js',
+    'react_list_component': 'ListComponent.js',
+    'react_edit_form_component': 'EditFormComponent.js',
+    'react_create_form_component': 'CreateFormComponent.js'
 }
 
 """
     Intalled file
 """
 def filenameToGenerate (code, table, install_dir):
+    # Laravel API server
     if code == 'api_controller':
         return (os.path.join(install_dir, r'app\Http\Controllers\api', cg_class(table) + 'Controller.php'))
     
@@ -70,6 +78,25 @@ def filenameToGenerate (code, table, install_dir):
 
     if code == 'test_api':
         return (os.path.join(install_dir, r'tests\Feature\api', cg_class(table) + 'ApiControllerTest.php'))
+    
+    # React client
+    if code == 'react_list_page':
+        return (os.path.join(install_dir, r'src\pages', cg_class(table) + 'ListPage.js'))
+    
+    if code == 'react_create_page':
+        return (os.path.join(install_dir, r'src\pages', cg_class(table) + 'CreatePage.js'))
+    
+    if code == 'react_edit_page':
+        return (os.path.join(install_dir, r'src\pages', cg_class(table) + 'EditPage.js'))
+    
+    if code == 'react_list_component':
+        return (os.path.join(install_dir, r'src\components', cg_class(table) + 'ListComponent.js'))
+    
+    if code == 'react_edit_form_component':
+        return (os.path.join(install_dir, r'src\components', cg_class(table) + 'EditFormComponent.js'))
+    
+    if code == 'react_create_form_component':
+        return (os.path.join(install_dir, r'src\components', cg_class(table) + 'CreateFormComponent.js'))
 
 """
     Filename for the template
@@ -81,6 +108,7 @@ def templateFilename (code, templates_dir):
     Filename for the generated file
 """
 def outputFilename (code, table, build_dir):
+    # Laravel API server
     if (code == 'api_controller'):
         return os.path.join(build_dir, cg_class(table) + 'Controller.php')
     
@@ -95,6 +123,25 @@ def outputFilename (code, table, build_dir):
     
     if (code == 'test_api'):
         return os.path.join(build_dir, cg_class(table) + 'ApiControllerTest.php')
+    
+    # React client
+    if code == 'react_list_page':
+        return os.path.join(build_dir, cg_class(table) + 'ListPage.js')
+    
+    if code == 'react_create_page':
+        return os.path.join(build_dir, cg_class(table) + 'CreatePage.js')
+    
+    if code == 'react_edit_page':
+        return os.path.join(build_dir, cg_class(table) + 'EditPage.js')
+    
+    if code == 'react_list_component':
+        return os.path.join(build_dir, cg_class(table) + 'ListComponent.js')
+    
+    if code == 'react_edit_form_component':
+        return os.path.join(build_dir, cg_class(table) + 'EditFormComponent.js')
+    
+    if code == 'react_create_form_component':
+        return os.path.join(build_dir, cg_class(table) + 'CreateFormComponent.js')
 
 """
 ================================================================================================
