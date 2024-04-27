@@ -52,11 +52,11 @@ template_files = {
     'test_model': 'ModelTest.php',
     'test_api': 'ApiControllerTest.php',
     'react_list_page' : 'ListPage.js.mustache', 
-    'react_create_page': 'CreatePage.js',
-    'react_edit_page': 'EditPage.js',
-    'react_list': 'List.js',
-    'react_edit_form': 'EditForm.js',
-    'react_create_form': 'CreateForm.js'
+    'react_create_page': 'CreatePage.js.mustache',
+    'react_edit_page': 'EditPage.js.mustache',
+    'react_list': 'List.js.mustache',
+    'react_edit_form': 'EditForm.js.mustache',
+    'react_create_form': 'CreateForm.js.mustache'
 }
 
 """
