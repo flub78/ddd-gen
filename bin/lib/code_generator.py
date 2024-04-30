@@ -20,6 +20,12 @@ def cg_table(table):
 def cg_primary_key(table):
     return primary_key(table)
 
+def cg_url(table):
+    return table.replace('_', '-')
+
+def cg_to_words(table):
+    return table.replace('_', ' ').rstrip('s')
+
 """
     Possible values are:
     url, password, email, phone, image, file, enumerate, boolean, bitfield, currency, foreign_key, color,
@@ -59,6 +65,20 @@ def csv_fields(table):
     list = field_list(table)
     list_with_quotes = [f"\"{x}\"" for x in list]
     return ", ".join(list_with_quotes)
+
+"""
+    Return list of fields with their translation for a given table
+"""
+def field_list_translation(table):
+    list = fillable_list(table)
+    res = ""
+    for field in list:
+        trans = field.capitalize().replace('_', ' ')
+
+        res += '    "' + field + '": "' + trans + '",' + "\n"
+    res += '    "last": "Last"' 
+    return res
+
 
 """
     Return a list of fillable fields for a given table

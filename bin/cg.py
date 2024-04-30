@@ -57,11 +57,12 @@ field = args.field if 'field' in args else ""
 snippet = args.snippet
 cg_arg = args.cg_args
 
-snippets = ["cg_class", "cg_element", "cg_table", "cg_primary_key",
+snippets = ["cg_class", "cg_element", "cg_table", "cg_primary_key", "cg_url",
              "cg_subtype", "csv_fields", "guarded", "create_validation_rules",
              "update_validation_rules", "create_set_attributes", "update_set_attributes",
              "primary_key_declaration", "factory_referenced_models", "factory_field_list",
-             "csv_high_variability_fields"]
+             "csv_high_variability_fields",
+             "field_list_translation"]
 if (args.list):
     print("supported snippets:")
     for s in snippets:

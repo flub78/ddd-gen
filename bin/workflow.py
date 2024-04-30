@@ -44,7 +44,7 @@ epilog += 'The script uses the following environment variables: WF_TEMPLATES_DIR
 
 # List of all templates
 default_codes = ['api_controller', 'api_model', 'factory', 'test_model', 'test_api',
-                  'react_list_page', 'react_create_page', 'react_edit_page', 'react_list', 'react_edit_form', 'react_create_form']
+                  'react_list_page', 'react_create_page', 'react_edit_page', 'react_list', 'react_edit_form', 'react_create_form', 'translation']
 template_files = {
     'api_controller': 'ApiController.php',      #  to be converted in {{Class}}Controller.php
     'api_model': 'Model.php',
@@ -56,7 +56,8 @@ template_files = {
     'react_edit_page': 'EditPage.js.mustache',
     'react_list': 'List.js.mustache',
     'react_edit_form': 'EditForm.js.mustache',
-    'react_create_form': 'CreateForm.js.mustache'
+    'react_create_form': 'CreateForm.js.mustache',
+    'translation': 'lang.json.mustache'
 }
 
 """
@@ -97,6 +98,9 @@ def filenameToGenerate (code, table, install_dir):
     
     if code == 'react_create_form':
         return (os.path.join(install_dir, r'src\components', cg_class(table) + 'CreateForm.js'))
+    
+    if code == 'translation':
+        return (os.path.join(install_dir, r'public\locales\en', table + '.json'))
 
 """
     Filename for the template
@@ -142,6 +146,9 @@ def outputFilename (code, table, build_dir):
     
     if code == 'react_create_form':
         return os.path.join(build_dir, cg_class(table) + 'CreateForm.js')
+    
+    if code == 'translation':
+        return os.path.join(build_dir, table + '.json')
 
 """
 ================================================================================================
@@ -157,7 +164,7 @@ parser.add_argument('-d', '--database', type=str, action="store", dest="database
                     help='database name')
 
 parser.add_argument('-c', '--code', type=str,  action="append",
-                    help='type of code to generate: api_controller | api_model | factory | test_model | test_api | react_list_page | react_create_page | react_edit_page | react_list | react_edit_form | react_create_form')
+                    help='type of code to generate: api_controller | api_model | factory | test_model | test_api | react_list_page | react_create_page | react_edit_page | react_list | react_edit_form | react_create_form | translation')
 
 parser.add_argument('-u', '--user', type=str, action="store", dest="user",
                     help='database user')

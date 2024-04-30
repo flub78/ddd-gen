@@ -51,6 +51,8 @@ def cg(text, render):
             code = factory_field_list(table)
         case "csv_high_variability_fields":
             code = csv_high_variability_fields(table)
+        case "field_list_translation":
+            code = field_list_translation(table)
 
         case _:
             code = "unknown snippet " + snippet
@@ -74,6 +76,8 @@ def process(current_table, template, output_file, install_file, action, verbose)
        'class': cg_class(table),
         'element': cg_element(table),
         'table': table,
+        'url': cg_url(table),
+        'words': cg_to_words(table),
         'primary_key': cg_primary_key(table),
         'cg': cg
     }
