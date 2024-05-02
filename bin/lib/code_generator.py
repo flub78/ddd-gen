@@ -349,3 +349,47 @@ def factory_field_list(table, indent=3):
         res = res + factory_field(table, field) + "\n"
         cnt = cnt + 1
     return res
+
+"""
+    return a list of cells to include in a data grid view
+"""
+def field_list_cells(table, indent=3):
+    flist = fillable_list(table)
+    res = ""
+    cnt = 0
+    tabs = "\t"*indent
+    for field in flist:
+        if (cnt): res = res + tabs
+        subtype = cg_subtype(table, field)
+        res = res + '<td> <Cell value="{board.' + field + '}" subtype="' + subtype + '" > </Cell></td>' + "\n"
+
+        cnt = cnt + 1
+    return res
+
+"""
+    return a list of titles for a data grid viex
+"""
+def field_list_titles(table, indent=3):
+    flist = fillable_list(table)
+    res = ""
+    cnt = 0
+    tabs = "\t"*indent
+    for field in flist:
+        if (cnt): res = res + tabs + '                    '
+        res = res + '<th align="left">{t("'+ table +':'+ field +'")}</th>' + "\n"
+        cnt = cnt + 1
+    return res
+
+"""
+    return a list of field inputs to include in a form
+"""
+def field_list_input_form(table, indent=3):
+    flist = fillable_list(table)
+    res = ""
+    cnt = 0
+    tabs = "\t"*indent
+    for field in flist:
+        if (cnt): res = res + tabs
+        res = res + factory_field(table, field) + "\n"
+        cnt = cnt + 1
+    return res

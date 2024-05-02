@@ -53,7 +53,13 @@ def cg(text, render):
             code = csv_high_variability_fields(table)
         case "field_list_translation":
             code = field_list_translation(table)
-
+        case "field_list_cells":
+            code = field_list_cells(table)
+        case "field_list_titles":
+            code = field_list_titles(table)
+        case "field_list_input_form":
+            code = field_list_input_form(table)
+        
         case _:
             code = "unknown snippet " + snippet
             print(code)

@@ -62,7 +62,7 @@ snippets = ["cg_class", "cg_element", "cg_table", "cg_primary_key", "cg_url",
              "update_validation_rules", "create_set_attributes", "update_set_attributes",
              "primary_key_declaration", "factory_referenced_models", "factory_field_list",
              "csv_high_variability_fields",
-             "field_list_translation"]
+             "field_list_translation", "field_list_cells", "field_list_titles", "field_list_input_form"]
 if (args.list):
     print("supported snippets:")
     for s in snippets:
