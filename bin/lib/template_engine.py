@@ -59,7 +59,9 @@ def cg(text, render):
             code = field_list_titles(table)
         case "field_list_input_form":
             code = field_list_input_form(table)
-        
+        case "set_form_data":
+            code = set_form_data(table)
+                    
         case _:
             code = "unknown snippet " + snippet
             print(code)
@@ -90,7 +92,7 @@ def process(current_table, template, output_file, install_file, action, verbose)
 
     res = ""
     with open(template, 'r') as f: 
-        res = chevron.render(f, dict)
+        res = chevron.render(f, dict).replace("\}\}", "}}").replace("\{\{", "{{")
 
     if (output_file):
         with open(output_file, 'w') as f:

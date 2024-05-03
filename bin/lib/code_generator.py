@@ -361,7 +361,7 @@ def field_list_cells(table, indent=3):
     for field in flist:
         if (cnt): res = res + tabs
         subtype = cg_subtype(table, field)
-        res = res + '<td> <Cell value="{board.' + field + '}" subtype="' + subtype + '" > </Cell></td>' + "\n"
+        res = res + '<td> <Cell value={board.' + field + '} subtype="' + subtype + '" > </Cell></td>' + "\n"
 
         cnt = cnt + 1
     return res
@@ -381,15 +381,86 @@ def field_list_titles(table, indent=3):
     return res
 
 """
+    return an input for a field
+"""
+def field_input_form(table, field, indent=2):
+    res = ""
+    tabs = "\t"*indent
+    subtype = cg_subtype(table, field)
+
+    trans_key = table + ':' + field
+    placeholder_key = trans_key + '.placeholder'
+    title_key = trans_key + '.title'
+    values_key = trans_key + '.values'
+
+    trans = 't("' + trans_key + '", "")'
+    title = 't("' + title_key + '", "")'
+    placeholder = 't("' + placeholder_key + '", "")'
+    values = 't("' + values_key + '", "")'
+    
+    res += tabs + '<FieldInput descriptor=\{\{' + "\n"
+    res += tabs + "\t" + "field: '" + field + "'," + "\n"
+    res += tabs + "\t" + "subtype: '" + subtype + "'," + "\n"
+    res += tabs + "\t" + 'label: ' + trans + ',' + "\n"
+    res += tabs + "\t" + 'title: ' + title + ',' + "\n"
+    res += tabs + "\t" + 'placeholder: ' + placeholder + ',' + "\n"
+    if (subtype == 'enum'):
+        res += tabs + "\t" + 'values: ' + values + ',' + "\n"
+    res += tabs + "\t" + 'error:inputErrorList.' + field + "\n"
+    res += tabs + '\}\} value={formData.theme} onChange={onChange} />' + "\n"
+
+    return res
+
+"""
     return a list of field inputs to include in a form
 """
-def field_list_input_form(table, indent=3):
+def field_list_input_form(table, indent=2):
+    flist = fillable_list(table)
+    res = ""
+    cnt = 0
+    tabs = "\t"*indent
+    res += tabs + '<Row className="align-items-center">' + "\n"
+    nb_col_per_row = 4
+    for field in flist:
+
+        if (cnt and (cnt % nb_col_per_row == 0)):
+            res += tabs + '</Row>' + "\n"*2
+            res += tabs + '<Row className="align-items-center">' + "\n"
+        
+        res = res + tabs + "\t"
+        res = res + '<Col sm={6} md={6} lg={3}>' + "\n"
+
+        res += field_input_form(table, field, indent+2)
+
+        res = res + tabs + "\t"
+        res = res + '</Col>' + "\n"*2
+
+        cnt = cnt + 1
+
+
+    res += tabs + '</Row>' + "\n"
+    return res
+
+"""
+    return a list of field to initialize in a form
+"""
+def set_form_data(table, indent=5):
     flist = fillable_list(table)
     res = ""
     cnt = 0
     tabs = "\t"*indent
     for field in flist:
+        subtype = cg_subtype(table, field)
+
         if (cnt): res = res + tabs
-        res = res + factory_field(table, field) + "\n"
+        res = res + field
+        if (subtype == 'boolean'):
+            res = res + ': false'
+        else:
+            res = res +  ": ''"
+        if (cnt < len(flist) - 1):
+            res = res + ","
+        res += "\n"
+
         cnt = cnt + 1
     return res
