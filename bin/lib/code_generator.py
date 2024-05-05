@@ -233,7 +233,7 @@ def create_set_attributes(table, ntabs = 3):
     set element attributes
 
     to test it:
-    cg -t boards -f name update_set_attributes
+    snp -t boards -f name update_set_attributes
 """
 def update_set_attributes(table, ntabs=3):
     flist = fillable_list(table)
@@ -370,7 +370,7 @@ def field_list_cells(table, indent=3):
     for field in flist:
         if (cnt): res = res + tabs
         subtype = cg_subtype(table, field)
-        res = res + '<td> <Cell value={board.' + field 
+        res = res + '<td> <Cell value={' + cg_element(table) + '.' + field 
         res += '} subtype="' + subtype 
         res += '" table="' + table + '" field="' + field + '"> </Cell></td>' + "\n"
 
