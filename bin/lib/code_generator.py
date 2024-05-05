@@ -75,7 +75,16 @@ def field_list_translation(table):
     for field in list:
         trans = field.capitalize().replace('_', ' ')
 
-        res += '    "' + field + '": "' + trans + '",' + "\n"
+        res += '    "' + field + '.label": "' + trans + '",' + "\n"
+        res += '    "' + field + '.placeholder": "'  + '",' + "\n"
+        res += '    "' + field + '.title": "'  + '",' + "\n"
+
+        subtype = cg_subtype(table, field)
+        if (subtype == 'enum'):
+            values = field_enum_values(table, field)
+            for value in values:
+                str_value = value.capitalize().replace('_', ' ')
+                res += '    "' + field + '.value.' + value + '": "' + str_value + '",' + "\n"
     res += '    "last": "Last"' 
     return res
 
