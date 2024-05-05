@@ -5,7 +5,7 @@ from lib.schema import *
 from lib.code_generator import *
 
 """
-    cg.py
+    snp.py
 
     generate code snippets from MySQL database schema and metadata
 
