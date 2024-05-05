@@ -387,11 +387,11 @@ def enum_input_form_values(table, field) -> str:
     res = ""
     values = field_enum_values(table, field)
 
-    res += 'values: {'
+    res += 'values: { '
     for value in values:
-        res +=   value + ": t('" + table + ':' + field + '.' + value 
-        res += "', '" + value + "'),"
-    res += ' },'
+        res +=   value + ":t('" + table + ':' + field + '.' + value 
+        res += "','" + value + "'), "
+    res += '},'
     return res
                          
 """
