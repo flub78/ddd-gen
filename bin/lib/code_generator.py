@@ -381,6 +381,20 @@ def field_list_titles(table, indent=3):
     return res
 
 """
+    return an input filed for an enum field
+"""
+def enum_input_form_values(table, field) -> str:
+    res = ""
+    values = field_enum_values(table, field)
+
+    res += 'values: {'
+    for value in values:
+        res +=   value + ": t('" + table + ':' + field + '.' + value 
+        res += "', '" + value + "'),"
+    res += ' },'
+    return res
+                         
+"""
     return an input for a field
 """
 def field_input_form(table, field, indent=2):
@@ -391,12 +405,10 @@ def field_input_form(table, field, indent=2):
     trans_key = table + ':' + field
     placeholder_key = trans_key + '.placeholder'
     title_key = trans_key + '.title'
-    values_key = trans_key + '.values'
 
     trans = 't("' + trans_key + '", "")'
     title = 't("' + title_key + '", "")'
     placeholder = 't("' + placeholder_key + '", "")'
-    values = 't("' + values_key + '", "")'
     
     res += tabs + '<FieldInput descriptor=\{\{' + "\n"
     res += tabs + "\t" + "field: '" + field + "'," + "\n"
@@ -405,9 +417,9 @@ def field_input_form(table, field, indent=2):
     res += tabs + "\t" + 'title: ' + title + ',' + "\n"
     res += tabs + "\t" + 'placeholder: ' + placeholder + ',' + "\n"
     if (subtype == 'enum'):
-        res += tabs + "\t" + 'values: ' + values + ',' + "\n"
+        res += tabs + "\t" + enum_input_form_values(table, field) + "\n"
     res += tabs + "\t" + 'error:inputErrorList.' + field + "\n"
-    res += tabs + '\}\} value={formData.theme} onChange={onChange} />' + "\n"
+    res += tabs + '\}\} value={formData.' + field + '} onChange={onChange} />' + "\n"
 
     return res
 
@@ -436,7 +448,6 @@ def field_list_input_form(table, indent=2):
         res = res + '</Col>' + "\n"*2
 
         cnt = cnt + 1
-
 
     res += tabs + '</Row>' + "\n"
     return res
