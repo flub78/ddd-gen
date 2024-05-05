@@ -370,7 +370,9 @@ def field_list_cells(table, indent=3):
     for field in flist:
         if (cnt): res = res + tabs
         subtype = cg_subtype(table, field)
-        res = res + '<td> <Cell value={board.' + field + '} subtype="' + subtype + '" > </Cell></td>' + "\n"
+        res = res + '<td> <Cell value={board.' + field 
+        res += '} subtype="' + subtype 
+        res += '" table="' + table + '" field="' + field + '"> </Cell></td>' + "\n"
 
         cnt = cnt + 1
     return res
