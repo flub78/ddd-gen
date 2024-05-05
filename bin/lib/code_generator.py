@@ -385,7 +385,7 @@ def field_list_titles(table, indent=3):
     tabs = "\t"*indent
     for field in flist:
         if (cnt): res = res + tabs + '                    '
-        res = res + '<th align="left">{t("'+ table +':'+ field +'")}</th>' + "\n"
+        res = res + '<th align="left">{t("'+ table +':'+ field +'.label")}</th>' + "\n"
         cnt = cnt + 1
     return res
 
@@ -412,10 +412,11 @@ def field_input_form(table, field, indent=2):
     subtype = cg_subtype(table, field)
 
     trans_key = table + ':' + field
+    label_key = trans_key + '.label'
     placeholder_key = trans_key + '.placeholder'
     title_key = trans_key + '.title'
 
-    trans = 't("' + trans_key + '", "")'
+    trans = 't("' + label_key + '", "")'
     title = 't("' + title_key + '", "")'
     placeholder = 't("' + placeholder_key + '", "")'
     
