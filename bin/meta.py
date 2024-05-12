@@ -65,7 +65,7 @@ def print_field(table, field, full=False):
         print ("\t\t\t extra:",field_extra(table, field))
         print ("\t\t\t privileges:",field_privileges(table, field))
         print ("\t\t\t comment:",field_comment(table, field))
-        print ("\t\t\t foreign key:",field_foreign_key(table, field))
+        print ("\t\t\t foreign_key:",field_foreign_key(table, field))
         print ('')
     else:
         subtype = field_subtype(table, field) 

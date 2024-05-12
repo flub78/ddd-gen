@@ -373,6 +373,11 @@ def field_meta(table, field, key):
 """
 def field_subtype(table, field):
     try:
+
+        fk = field_foreign_key(table, field)
+        if fk != None:
+            return 'foreign_key'
+        
         subtype = field_meta(table, field, 'subtype')
         if subtype != None:
             return subtype
