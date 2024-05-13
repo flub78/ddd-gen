@@ -116,10 +116,15 @@ def get_fields(db, database, table):
         # metadata
         metadata[table][elt['field']] = {}
         if elt['comment']:
-            comment_meta = json.loads(elt['comment'])
-            for key in comment_meta:
-                metadata[table][elt['field']][key] = comment_meta[key]
-                # print (table, elt['field'], key, metadata[table][elt['field']][key])
+            try:
+                comment_meta = json.loads(elt['comment'])
+                for key in comment_meta:
+                    metadata[table][elt['field']][key] = comment_meta[key]
+                    # print (table, elt['field'], key, metadata[table][elt['field']][key])
+            except Exception as e:
+                # print ("Exception in json: ", e)
+                None
+
     return attributes
 
 """
@@ -127,30 +132,34 @@ def get_fields(db, database, table):
 """
 def fetch_metadata(db, database, table):
     
-    cursor = db.cursor()
-    query = " SHOW FULL COLUMNS FROM " + table + " FROM " + database
-    query = "SELECT * FROM `metadata` WHERE `table`='" + table + "';"
-    cursor.execute(query)
+    try:
+        cursor = db.cursor()
+        # query = " SHOW FULL COLUMNS FROM " + table + " FROM " + database
+        # get all the metadata lines for a table
+        query = "SELECT * FROM `metadata` WHERE `table`='" + table + "';"
+        cursor.execute(query)
 
-    for line in cursor:
-        # print (line)
-        field = line[2]
-        key = line[3]
-        value = line[4]
+        for line in cursor:
+            # print (line)
+            field = line[2]
+            key = line[3]
+            value = line[4]
 
-        if table not in metadata:
-            metadata[table] = {}
-        if field not in metadata[table]:
-            metadata[table][field] = {}
-        
-        # Is it a good idea to be flexible here ?
-        # May be that I should be strict and only accept fell formed json
-        if key == 'json' and value != None and value != "":
-            json_list = json.loads(value)
-            for elt in json_list:
-                metadata[table][field][elt] = json_list[elt]
-        else:
-            metadata[table][field][key] = value
+            if table not in metadata:
+                metadata[table] = {}
+            if field not in metadata[table]:
+                metadata[table][field] = {}
+            
+            # Is it a good idea to be flexible here ?
+            # May be that I should be strict and only accept well formed json
+            if key == 'json' and value != None and value != "":
+                json_list = json.loads(value)
+                for elt in json_list:
+                    metadata[table][field][elt] = json_list[elt]
+            else:
+                metadata[table][field][key] = value
+    except Exception as e:
+        return None
 
 """
     Fetch the foreign key information for a table
@@ -389,6 +398,8 @@ def field_subtype(table, field):
 
         if 'image' in field:
             return 'image'
+        if 'string_id' in field:
+            return 'string_id'
         if 'file' in field:
             return 'file'
         if 'password' in field:
@@ -427,7 +438,6 @@ def field_subtype(table, field):
     except Exception as e:
         print ("Exception in field_subtype: ", e)
         return "exception"
-        return None
 
 """
     check if a field is mass assignable
