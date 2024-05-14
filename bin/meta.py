@@ -73,6 +73,31 @@ def print_field(table, field, full=False):
             subtype = ""
         print ("\t\t", field, ' ', field_type(table, field),  subtype)
 
+def print_foreign_key(tables):
+    referenced_by = {}
+
+    for table in tables:
+        cnt = 0
+        fields = field_list(table)
+        for field in fields:
+            fk = field_foreign_key(table, field)
+            if fk:
+                if (cnt == 0):
+                    print("\t", table)
+                print ("\t\t", field)
+                print ("\t\t\t foreign_key:", fk)
+                cnt += 1
+                if (referenced_by.get(fk['table']) == None):
+                    referenced_by[fk['table']] = []
+                referenced_by[fk['table']].append(table)
+
+    print ("")
+    print ("Referenced by:")
+    for table in referenced_by:
+        print("\t", table)
+        for ref in referenced_by[table]:
+            print("\t\t", ref)
+            
 
 parser = argparse.ArgumentParser(
     description='Extract meta data from a MySql database.',
@@ -125,8 +150,12 @@ if (args.table):
 tables = table_list()
 
 print(database)
-print("tables", tables)
+
 if (args.action == "list"):
+    print("tables", tables)
+    exit(0)
+elif (args.action == "foreign"):
+    print_foreign_key(tables)
     exit(0)
 else:    
     for table in tables:
