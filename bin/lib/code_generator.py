@@ -404,6 +404,17 @@ def enum_input_form_values(table, field) -> str:
         res += "','" + value + "'), "
     res += '},'
     return res
+
+"""
+    return the image for a table
+"""
+def image_field(table):
+    tm = table_meta(table)
+    print (tm)
+    if 'imageField' in tm:
+        return tm['imageField']
+    else:
+        return 'image'
                          
 """
     return an input for a field
@@ -412,6 +423,7 @@ def field_input_form(table, field, indent=2):
     res = ""
     tabs = "\t"*indent
     subtype = cg_subtype(table, field)
+    fk = field_foreign_key(table, field)
 
     trans_key = table + ':' + field
     label_key = trans_key + '.label'
@@ -430,6 +442,10 @@ def field_input_form(table, field, indent=2):
     res += tabs + "\t" + 'placeholder: ' + placeholder + ',' + "\n"
     if (subtype == 'enum'):
         res += tabs + "\t" + enum_input_form_values(table, field) + "\n"
+    if (fk):
+        res += tabs + "\t" + 'target_table: "' + fk['table'] + '",' + "\n"
+        res += tabs + "\t" + 'target_field: "' + fk['field'] + '",' + "\n"
+        res += tabs + "\t" + 'imageField: "' + image_field(fk['table']) + '",' + "\n"    
     res += tabs + "\t" + 'error:inputErrorList.' + field + "\n"
     res += tabs + '\}\} value={formData.' + field + '} onChange={onChange} />' + "\n"
 

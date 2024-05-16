@@ -144,6 +144,10 @@ if (args.table):
     print("\t", args.table)
     for field in fields:
         print_field(table, field, args.verbose)
+
+    tm = table_meta(table)
+    print("\n")
+    print("\t", table, " metadata:", tm)
     exit(0)
 
 # only database is specified
@@ -154,9 +158,11 @@ print(database)
 if (args.action == "list"):
     print("tables", tables)
     exit(0)
+
 elif (args.action == "foreign"):
     print_foreign_key(tables)
     exit(0)
+
 else:    
     for table in tables:
         print("\t", table)
@@ -164,5 +170,10 @@ else:
         fields = field_list(table)
         for field in fields:
             print_field(table, field, args.verbose)
+
+        tm = table_meta(table)
+        print("\n")
+        print("\t", table, " metadata:", tm)
+        print("\n")
 
 print ("bye ...")

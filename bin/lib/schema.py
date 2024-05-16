@@ -17,6 +17,7 @@ tables = []
 field_l = {}
 attributes = {}     # attributes[table][field]['field'|'type'|'collation'|'null'|'key'|'default'|'extra'|'privileges'|'comment']
 metadata = {}           # meta[table][field]['subtype'|'fillable'|'guarded'|'hidden'|'label'|'help'|'placeholder'|'class'|'options'|'rules'|'validation']
+table_metadata = {}
 foreign = {}
 
 # Utility functions
@@ -145,6 +146,13 @@ def fetch_metadata(db, database, table):
             key = line[3]
             value = line[4]
 
+            if not field:
+                # metadata for the table itself
+                if (table not in table_metadata):
+                    table_metadata[table] = {}
+                table_metadata[table][key] = value
+                continue
+
             if table not in metadata:
                 metadata[table] = {}
             if field not in metadata[table]:
@@ -158,6 +166,7 @@ def fetch_metadata(db, database, table):
                     metadata[table][field][elt] = json_list[elt]
             else:
                 metadata[table][field][key] = value
+
     except Exception as e:
         return None
 
@@ -376,6 +385,22 @@ def field_meta(table, field, key):
         return None
     
     return metadata[table][field][key]
+
+"""
+    return the metadata of a table
+"""
+def table_meta(table, key = ''):
+    if table not in table_metadata:
+        return None
+    
+    if not key:
+        return table_metadata[table]
+    
+    if key not in table_metadata[table]:
+        return None
+    
+    return table_metadata[table][key]
+
 
 """
     return the subtype of a field
