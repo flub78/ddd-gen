@@ -411,10 +411,10 @@ def enum_input_form_values(table, field) -> str:
 def image_field(table):
     tm = table_meta(table)
     print (tm)
-    if 'imageField' in tm:
-        return tm['imageField']
-    else:
-        return 'image'
+    if tm:
+        if 'imageField' in tm:
+            return tm['imageField']
+    return 'image'
                          
 """
     return an input for a field
