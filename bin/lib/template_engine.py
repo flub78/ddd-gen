@@ -61,6 +61,8 @@ def cg(text, render):
             code = field_list_input_form(table)
         case "set_form_data":
             code = set_form_data(table)
+        case "join_for_images":
+            code = join_for_images(table)
                     
         case _:
             code = "unknown snippet " + snippet

@@ -503,3 +503,27 @@ def set_form_data(table, indent=5):
 
         cnt = cnt + 1
     return res
+
+"""
+    $query->join('boards', 'columns.board_id', '=', 'boards.name');
+    $query->select('columns.*', 'boards.name as board_id_image');
+"""
+def join_for_images(table, indent=3):
+    tabs = "\t"*indent
+    res = ""
+    select = []
+    select.append(table + '.*')
+    flist = fillable_list(table)
+
+    for field in flist:
+        fk = field_foreign_key(table, field)
+        if (fk):
+            res += f"$query->join('{fk['table']}', '{table}.{field}', '=', '{fk['table']}.{fk['field']}');\n" + tabs
+            str = fk['table'] + '.' + fk['field'] + ' as ' +  field + '_image'
+            select.append(str)
+
+    if (len(select) < 2):
+        return ""
+
+    res = res + "$query->select('" + "', '".join(select) + "');"
+    return res
