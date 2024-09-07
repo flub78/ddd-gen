@@ -74,7 +74,7 @@ def check_args_and_fetch(args):
         password = args.password
 
     if (not database):
-        print ("database not defined: META_DB or -d argument²")
+        print ("database not defined: META_DB or -d argument")
         exit(1)
 
     if (not user):

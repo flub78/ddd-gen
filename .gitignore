@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 bin/SETENV.BAT
 SETENV.BAT
+bin/lib/__pycache__/schema.cpython-312.pyc
