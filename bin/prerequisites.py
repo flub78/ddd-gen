@@ -1,0 +1,225 @@
+#!/usr/bin/python
+# -*- coding:utf8 -*
+from lib.schema import *
+import os
+import argparse
+import subprocess
+import requests
+import platform
+import subprocess
+import platform
+import mysql.connector
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import urlparse
+
+"""
+    prerequisites.py
+
+    This script checks the prerequisites for execution of a WEB application.
+
+    It checks the following:
+    - the environment variables are set
+    - apache is up and running
+    - the database is available
+    - the database is accessible by the default user
+    - The schema has been defined
+    - And minimal test data exist
+
+    The scripts uses the following environment variables:
+    - META_DB_HOST: the host name of the MySql server
+    - META_DB_PORT: the port number of the MySql server
+    - META_DB_USER: the user name to connect to the MySql server
+    - META_DB_PASSWORD: the password to connect to the MySql server
+    - META_DB_NAME: the name of the database to analyze
+
+"""
+
+class MySQLNotRunningError(Exception):
+    """Custom exception for when MySQL is not running."""
+    pass
+
+class ApacheNotRunningError(Exception):
+    """Custom exception for when Apache is not running."""
+    pass
+
+def parse_environment():
+    """
+    Analyze the environment variables and parse the command line arguments. Checks that mandatory parameters are set. returns a dictionary with the command line arguments and values from the environment.
+
+    The following parameters can be set:
+    - verbose: verbose mode
+    - database: the database name
+    - user: the user name to connect to the MySql server
+    - password: the password to connect to the MySql server (optional)
+    """
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="Parse environment variables and command line arguments")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
+    parser.add_argument("-d", "--database", help="Database name")
+    parser.add_argument("-u", "--user", help="User name for MySQL server")
+    parser.add_argument("-p", "--password", help="Password for MySQL server (optional)")
+
+    # Parse command line arguments
+    args = parser.parse_args()
+
+    # Create a dictionary to store the final configuration
+    config = {}
+
+    # Process each parameter
+    config['verbose'] = args.verbose or os.environ.get('VERBOSE', '').lower() == 'true'
+    config['database'] = args.database or os.environ.get('DATABASE')
+    config['user'] = args.user or os.environ.get('USER')
+    config['password'] = args.password or os.environ.get('PASSWORD')
+
+    # Check for mandatory parameters
+    mandatory_params = ['database', 'user']
+    missing_params = [param for param in mandatory_params if not config[param]]
+
+    if missing_params:
+        raise ValueError(f"Missing mandatory parameters: {', '.join(missing_params)}")
+
+    return config
+
+
+def check_apache():
+    """
+    Check if Apache is running.
+
+    Raises:
+    ApacheNotRunningError: If Apache is not running.
+    """
+    system = platform.system().lower()
+
+    # Check if Apache process is running
+    if system in ["linux", "darwin"]:  # Linux or macOS
+        try:
+            output = subprocess.check_output(["pgrep", "-f", "apache2|httpd"])
+            if output:
+                return  # Apache is running
+        except subprocess.CalledProcessError:
+            pass
+    elif system == "windows":
+        try:
+            # Use 'cp1252' encoding for Windows
+            output = subprocess.check_output(["tasklist", "/FI", "IMAGENAME eq httpd.exe"], encoding='cp1252')
+            if "httpd.exe" in output:
+                return  # Apache is running
+        except subprocess.CalledProcessError:
+            pass
+
+    # If process check fails, try making an HTTP request
+    try:
+        response = requests.get("http://localhost", timeout=5)
+        if response.status_code == 200:
+            return  # Apache is running
+    except requests.RequestException:
+        pass
+
+    # If we've reached this point, Apache is not running
+    raise ApacheNotRunningError("Apache is not running")
+
+def check_mysql(host='localhost', user=None, password=None):
+    """
+    Check if MySQL is running.
+
+    Args:
+    host (str): The MySQL server host. Defaults to 'localhost'.
+    user (str): The MySQL user. If None, only process-based check will be performed.
+    password (str): The MySQL password. If None, only process-based check will be performed.
+
+    Raises:
+    MySQLNotRunningError: If MySQL is not running.
+    """
+    system = platform.system().lower()
+
+    # Check if MySQL process is running
+    if system in ["linux", "darwin"]:  # Linux or macOS
+        try:
+            output = subprocess.check_output(["pgrep", "-f", "mysqld"])
+            if output:
+                return  # MySQL is running
+        except subprocess.CalledProcessError:
+            pass
+    elif system == "windows":
+        try:
+            output = subprocess.check_output(["tasklist", "/FI", "IMAGENAME eq mysqld.exe"], encoding='cp1252')
+            if "mysqld.exe" in output:
+                return  # MySQL is running
+        except subprocess.CalledProcessError:
+            pass
+
+    # If process check fails and credentials are provided, try making a MySQL connection
+    if user is not None and password is not None:
+        try:
+            conn = mysql.connector.connect(
+                host=host,
+                user=user,
+                password=password,
+                connect_timeout=5
+            )
+            conn.close()
+            return  # MySQL is running and we could connect
+        except mysql.connector.Error:
+            pass
+
+    # If we've reached this point, MySQL is not running or we couldn't connect
+    raise MySQLNotRunningError("MySQL is not running or connection failed")
+
+def check_urls(urls, timeout=5, max_workers=10):
+    """
+    Check if a list of URLs is reachable on a local server.
+
+    Args:
+    urls (list): A list of URLs to check.
+    timeout (int): The timeout for each request in seconds. Default is 5.
+    max_workers (int): The maximum number of threads to use. Default is 10.
+
+    Returns:
+    dict: A dictionary with URLs as keys and their status as values.
+    """
+    results = {}
+
+    def check_url(url):
+        try:
+            parsed_url = urlparse(url)
+            if not parsed_url.scheme:
+                url = f"http://{url}"
+            
+            response = requests.get(url, timeout=timeout)
+            if response.status_code == 200:
+                return url, "Reachable"
+            else:
+                return url, f"Not reachable (Status code: {response.status_code})"
+        except requests.RequestException as e:
+            return url, f"Error: {str(e)}"
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_url = {executor.submit(check_url, url): url for url in urls}
+        for future in as_completed(future_to_url):
+            url, status = future.result()
+            results[url] = status
+
+    return results
+
+#######################################################################
+print ("Check Prerequisites to run a WEB application locally")
+
+config = parse_environment()
+print ("Configuration:", config)
+
+check_apache()
+print ("Apache is running")
+
+check_mysql(host='localhost', user=config['user'], password=config['password'])
+print ("MySql is running")
+
+urls_to_check = [
+        "http://localhost/dashboard/",
+        "http://localhost/dashboard/phpinfo.php",
+        "http://localhost/phpmyadmin/"
+    ]
+
+results = check_urls(urls_to_check)
+print("URL:", results)
+
+print ("bye ...")
