@@ -12,6 +12,7 @@ import mysql.connector
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
 import subprocess
+from typing import Dict, List, Optional, Any
 
 """
     prerequisites.py
@@ -43,7 +44,7 @@ class ApacheNotRunningError(Exception):
     """Custom exception for when Apache is not running."""
     pass
 
-def parse_environment():
+def parse_environment() -> Dict[str, Any]:
     """
     Analyze the environment variables and parse the command line arguments. Checks that mandatory parameters are set. returns a dictionary with the command line arguments and values from the environment.
 
@@ -52,6 +53,7 @@ def parse_environment():
     - database: the database name
     - user: the user name to connect to the MySql server
     - password: the password to connect to the MySql server (optional)
+    - urls: one or more URLs (multiple occurrences are possible)
     """
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Parse environment variables and command line arguments")
@@ -59,18 +61,20 @@ def parse_environment():
     parser.add_argument("-d", "--database", help="Database name")
     parser.add_argument("-u", "--user", help="User name for MySQL server")
     parser.add_argument("-p", "--password", help="Password for MySQL server (optional)")
+    parser.add_argument("--urls", action="append", help="URLs (multiple occurrences are possible)")
 
     # Parse command line arguments
     args = parser.parse_args()
 
     # Create a dictionary to store the final configuration
-    config = {}
+    config: Dict[str, Any] = {}
 
     # Process each parameter
     config['verbose'] = args.verbose or os.environ.get('VERBOSE', '').lower() == 'true'
     config['database'] = args.database or os.environ.get('DATABASE')
     config['user'] = args.user or os.environ.get('USER')
     config['password'] = args.password or os.environ.get('PASSWORD')
+    config['urls'] = args.urls or os.environ.get('URLS', '').split(',') 
 
     # Check for mandatory parameters
     mandatory_params = ['database', 'user']
@@ -82,8 +86,7 @@ def parse_environment():
 
     return config
 
-
-def check_apache():
+def check_apache() -> None:
     """
     Check if Apache is running.
 
@@ -121,7 +124,7 @@ def check_apache():
     print("Apache is not running")
     exit(1)
 
-def check_mysql(host='localhost', user=None, password=None):
+def check_mysql(host: str = 'localhost', user: Optional[str] = None, password: Optional[str] = None) -> None:
     """
     Check if MySQL is running.
 
@@ -169,7 +172,7 @@ def check_mysql(host='localhost', user=None, password=None):
     print("MySQL is not running or connection failed")
     exit(1)
 
-def check_urls(urls, timeout=5, max_workers=10):
+def check_urls(urls: List[str], timeout: int = 5, max_workers: int = 10) -> Dict[str, str]:
     """
     Check if a list of URLs is reachable on a local server.
 
@@ -181,9 +184,9 @@ def check_urls(urls, timeout=5, max_workers=10):
     Returns:
     dict: A dictionary with URLs as keys and their status as values.
     """
-    results = {}
+    results: Dict[str, str] = {}
 
-    def check_url(url):
+    def check_url(url: str) -> Tuple[str, str]:
         try:
             parsed_url = urlparse(url)
             if not parsed_url.scheme:
@@ -205,7 +208,7 @@ def check_urls(urls, timeout=5, max_workers=10):
 
     return results
 
-def check_php_version():
+def check_php_version() -> str:
     """
     Returns the PHP version of the default PHP installation.
     """
@@ -223,7 +226,7 @@ def check_php_version():
     except Exception as e:
         return f"An error occurred: {str(e)}"
     
-def check_databases_exist(host, user, password, databases):
+def check_databases_exist(host: str, user: str, password: str, databases: List[str]) -> Dict[str, bool]:
     """
     Check if one or several MySQL databases exist.
 
@@ -236,7 +239,7 @@ def check_databases_exist(host, user, password, databases):
     Returns:
     dict: A dictionary with database names as keys and boolean values indicating existence
     """
-    results = {}
+    results: Dict[str, bool] = {}
 
     try:
         # Establish a connection to the MySQL server
