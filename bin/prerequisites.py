@@ -11,6 +11,7 @@ import platform
 import mysql.connector
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
+import subprocess
 
 """
     prerequisites.py
@@ -76,7 +77,8 @@ def parse_environment():
     missing_params = [param for param in mandatory_params if not config[param]]
 
     if missing_params:
-        raise ValueError(f"Missing mandatory parameters: {', '.join(missing_params)}")
+        print(f"Missing mandatory parameters: {', '.join(missing_params)}")
+        exit(1)
 
     return config
 
@@ -116,7 +118,8 @@ def check_apache():
         pass
 
     # If we've reached this point, Apache is not running
-    raise ApacheNotRunningError("Apache is not running")
+    print("Apache is not running")
+    exit(1)
 
 def check_mysql(host='localhost', user=None, password=None):
     """
@@ -163,7 +166,8 @@ def check_mysql(host='localhost', user=None, password=None):
             pass
 
     # If we've reached this point, MySQL is not running or we couldn't connect
-    raise MySQLNotRunningError("MySQL is not running or connection failed")
+    print("MySQL is not running or connection failed")
+    exit(1)
 
 def check_urls(urls, timeout=5, max_workers=10):
     """
@@ -201,6 +205,67 @@ def check_urls(urls, timeout=5, max_workers=10):
 
     return results
 
+def check_php_version():
+    """
+    Returns the PHP version of the default PHP installation.
+    """
+    try:
+        # Run the 'php -v' command and capture its output
+        result = subprocess.run(['php', '-v'], capture_output=True, text=True, check=True)
+        
+        # Extract the version from the output
+        version_line = result.stdout.split('\n')[0]
+        version = version_line.split()[1]
+        
+        return version
+    except subprocess.CalledProcessError:
+        return "PHP is not installed or not in the system PATH"
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+    
+def check_databases_exist(host, user, password, databases):
+    """
+    Check if one or several MySQL databases exist.
+
+    Args:
+    host (str): MySQL server host
+    user (str): MySQL user
+    password (str): MySQL password
+    databases (list): List of database names to check
+
+    Returns:
+    dict: A dictionary with database names as keys and boolean values indicating existence
+    """
+    results = {}
+
+    try:
+        # Establish a connection to the MySQL server
+        connection = mysql.connector.connect(
+            host=host,
+            user=user,
+            password=password
+        )
+
+        # Create a cursor object to execute SQL queries
+        cursor = connection.cursor()
+
+        # Get all existing databases
+        cursor.execute("SHOW DATABASES")
+        existing_databases = [db[0] for db in cursor.fetchall()]
+
+        # Check each database
+        for db in databases:
+            results[db] = db in existing_databases
+
+    except mysql.connector.Error as error:
+        print(f"Error connecting to MySQL server: {error}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return results
+
 #######################################################################
 print ("Check Prerequisites to run a WEB application locally")
 
@@ -221,5 +286,18 @@ urls_to_check = [
 
 results = check_urls(urls_to_check)
 print("URL:", results)
+
+php_version = check_php_version()
+print(f"Current PHP version: {php_version}")
+
+host = "localhost"
+user = "root"
+password = ""
+databases_to_check = ["mysql", "information_schema", "nonexistent_db", "multi"]
+
+existence_results = check_databases_exist(host, user, password, databases_to_check)
+
+for db, exists in existence_results.items():
+    print(f"Database '{db}': {'Exists' if exists else 'Does not exist'}")
 
 print ("bye ...")
