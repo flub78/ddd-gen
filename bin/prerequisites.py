@@ -71,9 +71,9 @@ def parse_environment() -> Dict[str, Any]:
 
     # Process each parameter
     config['verbose'] = args.verbose or os.environ.get('VERBOSE', '').lower() == 'true'
-    config['database'] = args.database or os.environ.get('DATABASE')
-    config['user'] = args.user or os.environ.get('USER')
-    config['password'] = args.password or os.environ.get('PASSWORD')
+    config['database'] = args.database or os.environ.get('META_DB')
+    config['user'] = args.user or os.environ.get('META_DB_USER')
+    config['password'] = args.password or os.environ.get('META_DB_PASSWORD')
     config['urls'] = args.urls or os.environ.get('URLS', '').split(',') 
 
     # Check for mandatory parameters
@@ -186,7 +186,7 @@ def check_urls(urls: List[str], timeout: int = 5, max_workers: int = 10) -> Dict
     """
     results: Dict[str, str] = {}
 
-    def check_url(url: str) -> Tuple[str, str]:
+    def check_url(url: str) -> tuple[str, str]:
         try:
             parsed_url = urlparse(url)
             if not parsed_url.scheme:
@@ -273,7 +273,7 @@ def check_databases_exist(host: str, user: str, password: str, databases: List[s
 print ("Check Prerequisites to run a WEB application locally")
 
 config = parse_environment()
-print ("Configuration:", config)
+if config['verbose']: print ("Configuration:", config)
 
 check_apache()
 print ("Apache is running")
