@@ -281,13 +281,7 @@ print ("Apache is running")
 check_mysql(host='localhost', user=config['user'], password=config['password'])
 print ("MySql is running")
 
-urls_to_check = [
-        "http://localhost/dashboard/",
-        "http://localhost/dashboard/phpinfo.php",
-        "http://localhost/phpmyadmin/"
-    ]
-
-results = check_urls(urls_to_check)
+results = check_urls(config['urls'])
 print("URL:", results)
 
 php_version = check_php_version()
