@@ -54,6 +54,7 @@ def parse_environment() -> Dict[str, Any]:
     - user: the user name to connect to the MySql server
     - password: the password to connect to the MySql server (optional)
     - urls: one or more URLs (multiple occurrences are possible)
+    - create_db: boolean to create the databases if they do not exist (default: False)
     """
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Parse environment variables and command line arguments")
@@ -62,6 +63,8 @@ def parse_environment() -> Dict[str, Any]:
     parser.add_argument("-u", "--user", help="User name for MySQL server")
     parser.add_argument("-p", "--password", help="Password for MySQL server (optional)")
     parser.add_argument("--urls", action="append", help="URLs (multiple occurrences are possible)")
+    parser.add_argument("--databases", action="append", help="Databases (multiple occurrences are possible)")
+    parser.add_argument("--create_db", action="store_true", default=False, help="Create databases if they do not exist")
 
     # Parse command line arguments
     args = parser.parse_args()
@@ -75,6 +78,8 @@ def parse_environment() -> Dict[str, Any]:
     config['user'] = args.user or os.environ.get('META_DB_USER')
     config['password'] = args.password or os.environ.get('META_DB_PASSWORD')
     config['urls'] = args.urls or os.environ.get('URLS', '').split(',') 
+    config['databases'] = args.databases or os.environ.get('databases', '').split(',') 
+    config['create_db'] = args.create_db
 
     # Check for mandatory parameters
     mandatory_params = ['database', 'user']
@@ -269,6 +274,34 @@ def check_databases_exist(host: str, user: str, password: str, databases: List[s
 
     return results
 
+def create_database(host: str, user: str, password: str, database_name: str) -> None:
+    """
+    Create a MySQL database.
+    """
+    try:
+        # Establish a connection to the MySQL server
+        connection = mysql.connector.connect(
+            host=host,
+            user=user,
+            password=password
+        )
+
+        # Create a cursor object to execute SQL queries
+        cursor = connection.cursor()
+
+        # Create the database
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
+
+        print(f"Database '{database_name}' created.")
+
+    except mysql.connector.Error as error:
+        print(f"Error creating database: {error}")
+
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
 #######################################################################
 print ("Check Prerequisites to run a WEB application locally")
 
@@ -292,9 +325,15 @@ user = "root"
 password = ""
 databases_to_check = ["mysql", "information_schema", "nonexistent_db", "multi"]
 
-existence_results = check_databases_exist(host, user, password, databases_to_check)
+existence_results = check_databases_exist(host, user, password, config['databases'])
 
 for db, exists in existence_results.items():
-    print(f"Database '{db}': {'Exists' if exists else 'Does not exist'}")
+    if exists:
+        print(f"Database '{db}': Exists")
+    else:
+        if config['create_db']:
+            create_database(host, user, password, db)
+        else:
+            print(f"Database '{db}': Does not exist")
 
 print ("bye ...")
