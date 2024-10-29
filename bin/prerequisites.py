@@ -2,6 +2,7 @@
 # -*- coding:utf8 -*
 from lib.schema import *
 import os
+import importlib.util
 import argparse
 import subprocess
 import requests
@@ -13,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
 import subprocess
 from typing import Dict, List, Optional, Any
+from configloader import ConfigLoader
 
 """
     prerequisites.py
@@ -20,20 +22,29 @@ from typing import Dict, List, Optional, Any
     This script checks the prerequisites for execution of a WEB application.
 
     It checks the following:
-    - the environment variables are set
     - apache is up and running
-    - the database is available
-    - the database is accessible by the default user
-    - The schema has been defined
-    - And minimal test data exist
+    - the MySQL is accessible by the root user
+    - the correct PHP version is installed
 
-    The scripts uses the following environment variables:
-    - META_DB_HOST: the host name of the MySql server
-    - META_DB_PORT: the port number of the MySql server
-    - META_DB_USER: the user name to connect to the MySql server
-    - META_DB_PASSWORD: the password to connect to the MySql server
-    - META_DB_NAME: the name of the database to analyze
+    Then it checks that we have some specific environments:
+    - databases
+    - database schema
+    - database user and password
+    - The schemas are defined, some tables exist
+    - Specific amount of data is inserted in the database
+    - Specific values are inserted in the database
 
+
+    Syntax:
+    python prerequisites.py --config config.py
+
+    All the things to checks are described into a python configuration file (setenv.py) by default.
+    The parameters recognized by prerequisites.py only define what to do when the prerequisites defined in the file are not met.
+
+    It is voluntary to keep a written definition of the prerequisites. It makes things easier
+    when you arrive on a project to have a file describing the context. The initial version of this script accepted definition of the prerequisites in the command line or environment variables but sometimes flexibility does not help.
+
+    The only exception to the rule above is the password to avoid the hassle of not keeping the setenv file under source control or managing encrypted credentials.
 """
 
 class MySQLNotRunningError(Exception):
@@ -50,21 +61,20 @@ def parse_environment() -> Dict[str, Any]:
 
     The following parameters can be set:
     - verbose: verbose mode
-    - database: the database name
-    - user: the user name to connect to the MySql server
-    - password: the password to connect to the MySql server (optional)
-    - urls: one or more URLs (multiple occurrences are possible)
     - create_db: boolean to create the databases if they do not exist (default: False)
+    - config: path to a configuration file
     """
+
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Parse environment variables and command line arguments")
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
-    parser.add_argument("-d", "--database", help="Database name")
-    parser.add_argument("-u", "--user", help="User name for MySQL server")
     parser.add_argument("-p", "--password", help="Password for MySQL server (optional)")
-    parser.add_argument("--urls", action="append", help="URLs (multiple occurrences are possible)")
-    parser.add_argument("--databases", action="append", help="Databases (multiple occurrences are possible)")
+    parser.add_argument("--urls", action="append", help="URLs (multiple)")
+    parser.add_argument("-db", "--databases", action="append", help="Databases (multiple)")
     parser.add_argument("--create_db", action="store_true", default=False, help="Create databases if they do not exist")
+    parser.add_argument("-t", "--tables", action="append", help="Database tables (multiple)")
+    parser.add_argument("--create_table", action="store_true", default=False, help="Create tables if they do not exist")
+    parser.add_argument("-c", "--config", help="Path to a configuration file", default="setenv.py", required=False)
 
     # Parse command line arguments
     args = parser.parse_args()
@@ -74,19 +84,45 @@ def parse_environment() -> Dict[str, Any]:
 
     # Process each parameter
     config['verbose'] = args.verbose or os.environ.get('VERBOSE', '').lower() == 'true'
-    config['database'] = args.database or os.environ.get('META_DB')
-    config['user'] = args.user or os.environ.get('META_DB_USER')
-    config['password'] = args.password or os.environ.get('META_DB_PASSWORD')
-    config['urls'] = args.urls or os.environ.get('URLS', '').split(',') 
-    config['databases'] = args.databases or os.environ.get('databases', '').split(',') 
+    # config['database'] = args.database or os.environ.get('META_DB')
+    # config['user'] = args.user or os.environ.get('META_DB_USER')
+    # config['password'] = args.password or os.environ.get('META_DB_PASSWORD')
+    # config['urls'] = args.urls or os.environ.get('URLS', '').split(',') 
+    # config['databases'] = args.databases or os.environ.get('databases', '').split(',') 
     config['create_db'] = args.create_db
+    # config['tables'] = args.tables or os.environ.get('tables', '').split(',')
+    config['create_table'] = args.create_table
+    config['config'] = args.config
+
+    # Check if the configuration file exist
+    if config['config'] and not os.path.exists(config['config']):
+        print(f"Configuration file {config['config']} does not exist")
+        exit(1)
+    else:
+        conf_file = config['config']
+        print("Loading configuration file:", conf_file)
+        spec = importlib.util.spec_from_file_location("config", conf_file)
+        cfg = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cfg)
+
+    # here the parameters defined in the configuration file are available in the config dictionary
+
+    if hasattr(cfg, 'databases'): config['databases'] = cfg.databases
+    if hasattr(cfg, 'user'): config['password'] = cfg.password
 
     # Check for mandatory parameters
-    mandatory_params = ['database', 'user']
-    missing_params = [param for param in mandatory_params if not config[param]]
+    mandatory_params = ['user', 'password', 'databases']
+
+    for param in mandatory_params:
+        if not config[param]:
+            print(f"Missing mandatory parameter: {param}")
+            missing_params = True
+        else:
+            config[param] = cfg.param
+
 
     if missing_params:
-        print(f"Missing mandatory parameters: {', '.join(missing_params)}")
+        print("Exiting.")
         exit(1)
 
     return config
@@ -306,6 +342,13 @@ def create_database(host: str, user: str, password: str, database_name: str) -> 
 print ("Check Prerequisites to run a WEB application locally")
 
 config = parse_environment()
+
+if config['config']: print ("Config file:", config['config'])
+# If config file exists, load it
+if config['config']:
+    from .utils import load_config
+    config = load_config(config['config'])
+
 if config['verbose']: print ("Configuration:", config)
 
 check_apache()
@@ -323,7 +366,6 @@ print(f"Current PHP version: {php_version}")
 host = "localhost"
 user = "root"
 password = ""
-databases_to_check = ["mysql", "information_schema", "nonexistent_db", "multi"]
 
 existence_results = check_databases_exist(host, user, password, config['databases'])
 
