@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 import subprocess
 from typing import Dict, List, Optional, Any
 from configloader import ConfigLoader
+import textwrap
 
 """
     prerequisites.py
@@ -55,10 +56,13 @@ class ApacheNotRunningError(Exception):
     """Custom exception for when Apache is not running."""
     pass
 
+# Custom formatter to preserve line breaks
+class CustomHelpFormatter(argparse.RawTextHelpFormatter):
+    pass
+
 def parse_environment() -> Dict[str, Any]:
     """
-    Analyze the environment variables and parse the command line arguments. Checks that mandatory parameters are set. returns a dictionary with the command line arguments and values from the environment.
-
+    Parse the command line arguments. Checks that mandatory parameters are set. returns a dictionary of CLI arguments.
     The following parameters can be set:
     - verbose: verbose mode
     - create_db: boolean to create the databases if they do not exist (default: False)
@@ -66,16 +70,22 @@ def parse_environment() -> Dict[str, Any]:
     """
 
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Parse environment variables and command line arguments")
+    parser = argparse.ArgumentParser(description="Check Prerequisites for local WEB applications",
+                                     formatter_class=CustomHelpFormatter,
+                                     epilog="""\
+The configuration file is a python file that defines the prerequisites to check. It must define the following variables:
+    databases: databases that must exist
+    user: database connection user
+    urls: URLs to check
+    tables: tables that must exist
+""")
+    
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
     parser.add_argument("-p", "--password", help="Password for MySQL server (optional)")
-    parser.add_argument("--urls", action="append", help="URLs (multiple)")
-    parser.add_argument("-db", "--databases", action="append", help="Databases (multiple)")
     parser.add_argument("--create_db", action="store_true", default=False, help="Create databases if they do not exist")
-    parser.add_argument("-t", "--tables", action="append", help="Database tables (multiple)")
     parser.add_argument("--create_table", action="store_true", default=False, help="Create tables if they do not exist")
     parser.add_argument("-c", "--config", help="Path to a configuration file", default="setenv.py", required=False)
-
+    
     # Parse command line arguments
     args = parser.parse_args()
 
@@ -84,13 +94,7 @@ def parse_environment() -> Dict[str, Any]:
 
     # Process each parameter
     config['verbose'] = args.verbose or os.environ.get('VERBOSE', '').lower() == 'true'
-    # config['database'] = args.database or os.environ.get('META_DB')
-    # config['user'] = args.user or os.environ.get('META_DB_USER')
-    # config['password'] = args.password or os.environ.get('META_DB_PASSWORD')
-    # config['urls'] = args.urls or os.environ.get('URLS', '').split(',') 
-    # config['databases'] = args.databases or os.environ.get('databases', '').split(',') 
     config['create_db'] = args.create_db
-    # config['tables'] = args.tables or os.environ.get('tables', '').split(',')
     config['create_table'] = args.create_table
     config['config'] = args.config
 
@@ -100,7 +104,7 @@ def parse_environment() -> Dict[str, Any]:
         exit(1)
     else:
         conf_file = config['config']
-        print("Loading configuration file:", conf_file)
+        print("Using configuration file:", conf_file)
         spec = importlib.util.spec_from_file_location("config", conf_file)
         cfg = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cfg)
@@ -339,7 +343,7 @@ def create_database(host: str, user: str, password: str, database_name: str) -> 
             connection.close()
 
 #######################################################################
-print ("Check Prerequisites to run a WEB application locally")
+print ("Prerequisites :")
 
 config = parse_environment()
 
