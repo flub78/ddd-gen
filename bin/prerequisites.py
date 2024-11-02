@@ -112,18 +112,17 @@ The configuration file is a python file that defines the prerequisites to check.
     # here the parameters defined in the configuration file are available in the config dictionary
 
     if hasattr(cfg, 'databases'): config['databases'] = cfg.databases
-    if hasattr(cfg, 'user'): config['password'] = cfg.password
+    if hasattr(cfg, 'user'): config['user'] = cfg.user
+    if hasattr(cfg, 'password'): config['password'] = cfg.password
 
     # Check for mandatory parameters
     mandatory_params = ['user', 'password', 'databases']
 
+    missing_params = False
     for param in mandatory_params:
-        if not config[param]:
+        if param not in config:
             print(f"Missing mandatory parameter: {param}")
             missing_params = True
-        else:
-            config[param] = cfg.param
-
 
     if missing_params:
         print("Exiting.")
@@ -343,15 +342,11 @@ def create_database(host: str, user: str, password: str, database_name: str) -> 
             connection.close()
 
 #######################################################################
+# Main
+#######################################################################
 print ("Prerequisites :")
 
 config = parse_environment()
-
-if config['config']: print ("Config file:", config['config'])
-# If config file exists, load it
-if config['config']:
-    from .utils import load_config
-    config = load_config(config['config'])
 
 if config['verbose']: print ("Configuration:", config)
 
