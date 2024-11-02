@@ -109,11 +109,11 @@ The configuration file is a python file that defines the prerequisites to check.
         cfg = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cfg)
 
-    # here the parameters defined in the configuration file are available in the config dictionary
-
+    # make the parameters defined in the configuration file available in the config dictionary
     if hasattr(cfg, 'databases'): config['databases'] = cfg.databases
     if hasattr(cfg, 'user'): config['user'] = cfg.user
     if hasattr(cfg, 'password'): config['password'] = cfg.password
+    if hasattr(cfg, 'urls'): config['urls'] = cfg.urls
 
     # password from CLI has higher priority than password from environment file
     if args.password: config['password'] = args.password
