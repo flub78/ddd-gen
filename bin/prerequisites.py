@@ -115,6 +115,9 @@ The configuration file is a python file that defines the prerequisites to check.
     if hasattr(cfg, 'user'): config['user'] = cfg.user
     if hasattr(cfg, 'password'): config['password'] = cfg.password
 
+    # password from CLI has higher priority than password from environment file
+    if args.password: config['password'] = args.password
+
     # Check for mandatory parameters
     mandatory_params = ['user', 'password', 'databases']
 
