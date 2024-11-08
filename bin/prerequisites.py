@@ -85,7 +85,8 @@ The configuration file is a python file that defines the prerequisites to check.
     parser.add_argument("--create_db", action="store_true", default=False, help="Create databases if they do not exist")
     parser.add_argument("--create_table", action="store_true", default=False, help="Create tables if they do not exist")
     parser.add_argument("-c", "--config", help="Path to a configuration file", default="setenv.py", required=False)
-    
+    parser.add_argument("-u", "--user", help="Username for MySQL server (optional)")
+
     # Parse command line arguments
     args = parser.parse_args()
 
@@ -115,8 +116,11 @@ The configuration file is a python file that defines the prerequisites to check.
     if hasattr(cfg, 'password'): config['password'] = cfg.password
     if hasattr(cfg, 'urls'): config['urls'] = cfg.urls
 
-    # password from CLI has higher priority than password from environment file
+    # CLI credentials have highest priority than configuration file
+
     if args.password: config['password'] = args.password
+    if args.user: config['user'] = args.user
+
 
     # Check for mandatory parameters
     mandatory_params = ['user', 'password', 'databases']
@@ -366,8 +370,8 @@ php_version = check_php_version()
 print(f"Current PHP version: {php_version}")
 
 host = "localhost"
-user = "root"
-password = ""
+user = config['user']
+password = config['password']
 
 existence_results = check_databases_exist(host, user, password, config['databases'])
 
