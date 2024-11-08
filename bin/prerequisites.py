@@ -364,7 +364,9 @@ check_mysql(host='localhost', user=config['user'], password=config['password'])
 print ("MySql is running")
 
 results = check_urls(config['urls'])
-print("URL:", results)
+print("URL:")
+for url, status in results.items():
+    print(f"\t{url} - Status: {status}")
 
 php_version = check_php_version()
 print(f"Current PHP version: {php_version}")
