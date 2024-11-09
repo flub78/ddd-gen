@@ -8,7 +8,6 @@ import subprocess
 import requests
 import platform
 import subprocess
-import platform
 import mysql.connector
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
@@ -275,7 +274,7 @@ def check_php_version() -> str:
     except Exception as e:
         return f"An error occurred: {str(e)}"
     
-def check_databases_exist(host: str, user: str, password: str, databases: List[str]) -> Dict[str, bool]:
+def check_databases_exist(host: str, user: str, password: str, databases: List[Dict[str, str]]) -> Dict[str, bool]:
     """
     Check if one or several MySQL databases exist.
 
@@ -289,6 +288,8 @@ def check_databases_exist(host: str, user: str, password: str, databases: List[s
     dict: A dictionary with database names as keys and boolean values indicating existence
     """
     results: Dict[str, bool] = {}
+
+    print("Checking databases...", databases)
 
     try:
         # Establish a connection to the MySQL server
@@ -309,6 +310,32 @@ def check_databases_exist(host: str, user: str, password: str, databases: List[s
         for db in databases:
             results[db] = db in existing_databases
 
+        for db in databases.values():
+            print(f"Database : ", db)
+    
+            user = db['user'] if 'user' in db else None
+            password = db['password'] if 'password' in db else None
+            database_name = db['name']
+
+            # Check if the user exists and has access to the database
+            cursor.execute(f"SELECT User, Host FROM mysql.user WHERE User = '{user}' AND Host = 'localhost'")
+            user_exists = cursor.fetchone()
+            if user_exists:
+                # Check if the user already has access to the database
+                cursor.execute(f"SHOW GRANTS FOR '{user}'@'localhost'")
+                grants = cursor.fetchall()
+                if (database_name,) in [grant[0] for grant in grants]:
+                    print(f"User '{user}' already has access to the database '{database_name}'.")
+                else:
+                    # Grant privileges to the user
+                    cursor.execute(f"GRANT ALL PRIVILEGES ON {database_name}.* TO '{user}'@'localhost'")
+            else:
+                # Create the user
+                cursor.execute(f"CREATE USER '{user}'@'localhost' IDENTIFIED BY '{password}'")
+                print(f"User '{user}' created.")
+                # Grant privileges to the user
+                cursor.execute(f"GRANT ALL PRIVILEGES ON {database_name}.* TO '{user}'@'localhost'")       
+
     except mysql.connector.Error as error:
         print(f"Error connecting to MySQL server: {error}")
     finally:
@@ -322,6 +349,7 @@ def create_database(host: str, user: str, password: str, database_name: str) -> 
     """
     Create a MySQL database.
     """
+
     try:
         # Establish a connection to the MySQL server
         connection = mysql.connector.connect(
@@ -337,6 +365,12 @@ def create_database(host: str, user: str, password: str, database_name: str) -> 
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
 
         print(f"Database '{database_name}' created.")
+        
+        # Create the user
+        cursor.execute(f"CREATE USER '{user}'@'localhost' IDENTIFIED BY '{password}'")
+        print(f"User '{user}' created.")
+        # Grant privileges to the user
+        cursor.execute(f"GRANT ALL PRIVILEGES ON {database_name}.* TO '{user}'@'localhost'")
 
     except mysql.connector.Error as error:
         print(f"Error creating database: {error}")
