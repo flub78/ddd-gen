@@ -65,7 +65,7 @@ def parse_environment() -> Dict[str, Any]:
     Parse the command line arguments. Checks that mandatory parameters are set. returns a dictionary of CLI arguments.
     The following parameters can be set:
     - verbose: verbose mode
-    - create_db: boolean to create the databases if they do not exist (default: False)
+    - create: boolean to create the databases if they do not exist (default: False)
     - config: path to a configuration file
     """
 
@@ -82,8 +82,7 @@ The configuration file is a python file that defines the prerequisites to check.
     
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
     parser.add_argument("-p", "--password", help="Password for MySQL server (optional)")
-    parser.add_argument("--create_db", action="store_true", default=False, help="Create databases if they do not exist")
-    parser.add_argument("--create_table", action="store_true", default=False, help="Create tables if they do not exist")
+    parser.add_argument("--create", action="store_true", default=False, help="Create databases if they do not exist")
     parser.add_argument("-c", "--config", help="Path to a configuration file", default="setenv.py", required=False)
     parser.add_argument("-u", "--user", help="Username for MySQL server (optional)")
 
@@ -95,8 +94,7 @@ The configuration file is a python file that defines the prerequisites to check.
 
     # Process each parameter
     config['verbose'] = args.verbose or os.environ.get('VERBOSE', '').lower() == 'true'
-    config['create_db'] = args.create_db
-    config['create_table'] = args.create_table
+    config['create'] = args.create
     config['config'] = args.config
 
     # Check if the configuration file exist
@@ -381,7 +379,7 @@ for db, exists in existence_results.items():
     if exists:
         print(f"Database '{db}': Exists")
     else:
-        if config['create_db']:
+        if config['create']:
             create_database(host, user, password, db)
         else:
             print(f"Database '{db}': Does not exist")
