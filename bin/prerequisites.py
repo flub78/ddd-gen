@@ -217,7 +217,7 @@ def check_mysql(host: str = 'localhost', user: Optional[str] = None, password: O
             pass
 
     # If we've reached this point, MySQL is not running or we couldn't connect
-    print("MySQL is not running or connection failed")
+    print(f"MySQL is not running or connection failed (host: {host}, user: {user}, password: {'*' * len(password) if password else None})")
     exit(1)
 
 def check_urls(urls: List[str], timeout: int = 5, max_workers: int = 10) -> Dict[str, str]:
