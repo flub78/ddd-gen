@@ -15,6 +15,7 @@ import subprocess
 from typing import Dict, List, Optional, Any
 from configloader import ConfigLoader
 import textwrap
+import pprint
 
 """
     prerequisites.py
@@ -289,7 +290,10 @@ def check_databases_exist(host: str, user: str, password: str, databases: List[D
     """
     results: Dict[str, bool] = {}
 
-    print("Checking databases...", databases)
+    print("Checking databases...")
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(databases)
+
 
     try:
         # Establish a connection to the MySQL server
