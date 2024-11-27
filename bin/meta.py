@@ -172,8 +172,7 @@ else:
             print_field(table, field, args.verbose)
 
         tm = table_meta(table)
-        print("\n")
-        print("\t", table, " metadata:", tm)
+        print("\t",  "    metadata:", tm)
         print("\n")
 
 print ("bye ...")
